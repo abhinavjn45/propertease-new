@@ -38,6 +38,8 @@
                 padding-left: 2rem !important;
             }
         </style>
+    
+        <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; frame-src 'self' https://www.youtube.com;">
     </head>
     <body>
         <!--* box-wrapper --> 
@@ -57,7 +59,7 @@
                     <div class="signin-wrapper">
                         <div class="intro-box">
                             <div class="intro-content style-dark">
-                                <a href="../index.html"><img src="../images/d-code-logo-light.svg" class="logo" alt="Propert-Ease"></a>
+                                <a href="../"><img src="../images/d-code-logo-light.svg" class="logo" alt="Propert-Ease"></a>
                                 <div class="heading-wrapper">
                                     <h2 class="h1">Welcome to <span>Propert-Ease</span></h2>
                                 </div>
@@ -65,14 +67,14 @@
                                     <p>Join thousands of other societies already using India's leading digital governance and financial management platform.</p>
                                 </div>
                                 <div class="btn-wrapper">
-                                    <a class="btn btn-primary btn-light" href="../index.html">Discover More</a>
+                                    <a class="btn btn-primary btn-light" href="../">Discover More</a>
                                 </div>
                             </div>
                         </div>
                         <div class="form-box">
                             <div class="register-form-container" style="padding-top: 30px;">
                                 <h3 class="mb-4 text-center">Sign In to your account</h3>
-                                <form>
+                                <form id="loginForm" method="POST" action="javascript:void(0);">
                                     <div class="form-group">
                                         <input type="text" class="form-control" placeholder="Enter Email/Username">
                                     </div>
@@ -116,3 +118,4 @@
         <script src="../js/dcode.js"></script>
     </body>
 </html>
+

@@ -23,6 +23,8 @@
         <link href="../css/style.css" rel="stylesheet" type="text/css" id="theme-default" />
         <link href="../css/rtl-style.css" rel="stylesheet" type="text/css" id="rtl-theme-default" disabled="disabled" />
         <link href="../css/colors/default-color.css" rel="stylesheet" type="text/css" id="theme-color" />
+    
+        <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; frame-src 'self' https://www.youtube.com;">
     </head>
     <body>
         <!--* box-wrapper -->
@@ -50,7 +52,7 @@
                                 </div>
                             </div><!--* End Heading -->
                             <ul class="st-breadcrumb">
-                                <li><a href="../index.html">Home</a></li>
+                                <li><a href="../">Home</a></li>
                                 <li class="active"><span>Contact Us</span></li>
                             </ul><!--* End Breadcrumb -->
                         </div><!--* Page Title Inner -->
@@ -65,7 +67,7 @@
                                     <div class="form-box">
                                         <h2 class="h4">Send us a Message</h2>
                                         <div class="contact-form">
-                                            <form method="post">
+                                            <form id="contactForm" method="POST" action="javascript:void(0);">
                                                 <div class="form-row">
                                                     <div class="form-group col-md-6">
                                                         <input type="text" class="form-control" id="FirstName" placeholder="First Name" required="">
@@ -174,3 +176,4 @@
         </script>
     </body>
 </html>
+

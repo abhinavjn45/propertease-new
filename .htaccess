@@ -1,0 +1,37 @@
+# ----------------------------------------------------------------------
+# Security Headers & Configuration
+# ----------------------------------------------------------------------
+
+<IfModule mod_headers.c>
+    # 1. Content Security Policy (CSP)
+    # Allows local scripts/styles, inline scripts/styles (required by the template), Google Fonts, YouTube iframes, and local/data images.
+    Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; frame-src 'self' https://www.youtube.com;"
+
+    # 2. Prevent Clickjacking
+    # Prevents the site from being embedded in an iframe on other domains.
+    Header always set X-Frame-Options "SAMEORIGIN"
+
+    # 3. Prevent MIME-Sniffing
+    # Forces the browser to respect the declared content type.
+    Header always set X-Content-Type-Options "nosniff"
+
+    # 4. Strict-Transport-Security (HSTS)
+    # Enforces HTTPS connections (Note: Only effective if accessed via HTTPS first).
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+
+    # 5. Referrer Policy
+    # Controls how much referrer information (sent via the Referer header) should be included with requests.
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# ----------------------------------------------------------------------
+# Directory Protection
+# ----------------------------------------------------------------------
+
+# Prevent directory listing (e.g., viewing contents of /images/ or /js/ if no index.html exists)
+Options -Indexes
+
+# Prevent access to hidden files and directories (like .git or .env)
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>

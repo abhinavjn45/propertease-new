@@ -23,6 +23,8 @@
         <link href="css/style.css" rel="stylesheet" type="text/css" id="theme-default" />
         <link href="css/rtl-style.css" rel="stylesheet" type="text/css" id="rtl-theme-default" disabled="disabled" />
         <link href="css/colors/default-color.css" rel="stylesheet" type="text/css" id="theme-color" />
+    
+        <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; frame-src 'self' https://www.youtube.com;">
     </head>
     <body>
         <!--* box-wrapper -->
@@ -52,7 +54,7 @@
                                     </div>
                                 </div>
                                 <div class="btn-wrapper wow fadeIn" data-wow-delay="1.2s">
-                                    <a class="btn btn-primary btn-light " href="register-society/index.html">Register Your Society</a>
+                                    <a class="btn btn-primary btn-light " href="register-society/">Register Your Society</a>
                                     <a class="btn btn-outline-primary btn-light" href="#"><i class="fas fa-play-circle"></i>See How It Works</a>
                                 </div>
                                 <div class="empty-space-30 clearfix"></div>
@@ -157,7 +159,7 @@
                         <div class="row clearfix">
                             <div class="col-lg-12 text-center">
                                 <div class="btn-wrapper">
-                                    <a href="register-society/index.html" class="btn btn-primary btn-large">Get Started For Free</a>
+                                    <a href="register-society/" class="btn btn-primary btn-large">Get Started For Free</a>
                                 </div>
                             </div><!--* End Col -->
                         </div><!--* End Row -->
@@ -465,7 +467,7 @@
                                     </div>
                                 </div>
                                 <div class="subscribe-form-wrapper">
-                                    <form method="post">
+                                    <form id="newsletterForm" method="POST" action="javascript:void(0);">
                                         <div class="form-group">
                                             <input type="email" name="EmailInput" class="form-control" placeholder="Enter Secretary's Email" required="">
                                         </div>
