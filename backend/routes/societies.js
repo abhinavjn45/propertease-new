@@ -29,12 +29,43 @@ const authenticateToken = (req, res, next) => {
   );
 };
 
+// Explicit CSRF Protection Middleware for state-changing API endpoints
+const requireCsrfHeader = (req, res, next) => {
+  // Ensure the custom header is present, blocking simple cross-site form submissions
+  const clientHeader = req.headers['x-requested-with'] || req.headers['x-propertease-client'];
+  if (!clientHeader) {
+    return res.status(403).json({ success: false, message: 'Strict CSRF validation failed. Missing required custom security header.' });
+  }
+  next();
+};
+
+/**
+ * @route GET /api/v1/societies/check-domain
+ * @desc Check real-time subdomain or custom domain availability
+ * @access Private
+ */
+router.get('/check-domain', authenticateToken, asyncHandler(async (req, res) => {
+  const { domain } = req.query;
+  if (!domain) {
+    return res.status(400).json({ success: false, available: false, message: 'Domain query parameter required' });
+  }
+
+  const fullDomain = domain.includes('.') ? domain.trim().toLowerCase() : `${domain.trim().toLowerCase()}.propertease.in`;
+  const [existingDomain] = await pool.query('SELECT id FROM societies WHERE custom_domain = ?', [fullDomain]);
+
+  res.status(200).json({
+    success: true,
+    available: existingDomain.length === 0,
+    fullDomain
+  });
+}));
+
 /**
  * @route POST /api/v1/societies/onboard
  * @desc Create society record & associate with authenticated representative user (Step 2)
  * @access Private
  */
-router.post('/onboard', authenticateToken, globalRateLimiter, [
+router.post('/onboard', authenticateToken, requireCsrfHeader, globalRateLimiter, [
   body('name').trim().notEmpty().withMessage('Society name is required.').isLength({ max: 255 }),
   body('registrationNumber').trim().notEmpty().withMessage('RCS registration number is required.'),
   body('totalUnits').isInt({ min: 1 }).withMessage('Total units must be a valid positive integer.'),
@@ -104,7 +135,7 @@ router.post('/onboard', authenticateToken, globalRateLimiter, [
  * @desc Connect custom domain or subdomain to society (Step 3)
  * @access Private
  */
-router.post('/domain', authenticateToken, globalRateLimiter, [
+router.post('/domain', authenticateToken, requireCsrfHeader, globalRateLimiter, [
   body('domain').trim().notEmpty().withMessage('Domain or subdomain is required.')
     .matches(/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/).withMessage('Please provide a valid fully qualified domain name (e.g. greenvilla.com or society.subdomain.com)')
 ], asyncHandler(async (req, res) => {

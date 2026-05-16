@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js",
+    "dev": "nodemon server.js",
     "init-schema": "node config/initSchema.js"
   },
   "dependencies": {
@@ -20,5 +20,8 @@
     "mysql2": "^3.9.7"
   },
   "author": "Propert-Ease Team",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
 }

@@ -18,6 +18,24 @@ const generateToken = (user) => {
 };
 
 /**
+ * @route GET /api/v1/auth/check-email
+ * @desc Check real-time email availability during registration
+ * @access Public
+ */
+router.get('/check-email', asyncHandler(async (req, res) => {
+  const { email } = req.query;
+  if (!email || !email.includes('@')) {
+    return res.status(400).json({ success: false, available: false, message: 'Invalid email format' });
+  }
+
+  const [existingUser] = await pool.query('SELECT id FROM users WHERE email = ?', [email.trim().toLowerCase()]);
+  res.status(200).json({
+    success: true,
+    available: existingUser.length === 0
+  });
+}));
+
+/**
  * @route POST /api/v1/auth/register
  * @desc Register representative user (Step 1 of Onboarding)
  * @access Public
@@ -33,7 +51,8 @@ router.post('/register', authRateLimiter, [
     return res.status(400).json({ success: false, errors: errors.array() });
   }
 
-  const { name, email, password, phone } = req.body;
+  const { name, email, password, phone, role } = req.body;
+  const userRole = role || 'representative';
 
   // Check if user already exists
   const [existingUser] = await pool.query('SELECT id FROM users WHERE email = ?', [email]);
@@ -47,14 +66,14 @@ router.post('/register', authRateLimiter, [
   // Insert representative user
   const [result] = await pool.query(
     'INSERT INTO users (name, email, password_hash, role, phone) VALUES (?, ?, ?, ?, ?)',
-    [name, email, passwordHash, 'secretary', phone || null]
+    [name, email, passwordHash, userRole, phone || null]
   );
 
   const newUser = {
     id: result.insertId,
     name,
     email,
-    role: 'secretary',
+    role: userRole,
     society_id: null
   };
 
@@ -140,7 +159,8 @@ router.post('/google', authRateLimiter, [
     return res.status(400).json({ success: false, errors: errors.array() });
   }
 
-  const { email, name, googleId } = req.body;
+  const { email, name, googleId, role } = req.body;
+  const userRole = role || 'representative';
 
   // Check if user exists by email or oauth_uid
   const [rows] = await pool.query(
@@ -163,14 +183,14 @@ router.post('/google', authRateLimiter, [
     // Create new OAuth user
     const [result] = await pool.query(
       'INSERT INTO users (name, email, oauth_provider, oauth_uid, role) VALUES (?, ?, ?, ?, ?)',
-      [name, email, 'google', googleId, 'secretary']
+      [name, email, 'google', googleId, userRole]
     );
 
     user = {
       id: result.insertId,
       name,
       email,
-      role: 'secretary',
+      role: userRole,
       society_id: null
     };
   }

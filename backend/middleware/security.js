@@ -15,6 +15,8 @@ const helmetMiddleware = helmet({
     }
   },
   crossOriginEmbedderPolicy: false,
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+  crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' },
   referrerPolicy: { policy: 'strict-origin-when-cross-origin' }
 });
 
@@ -25,10 +27,19 @@ const corsMiddleware = cors({
       process.env.FRONTEND_URL || 'http://localhost:3000',
       'http://localhost:5000',
       'http://127.0.0.1:3000',
-      'http://127.0.0.1:5000'
+      'http://127.0.0.1:5000',
+      'http://localhost',
+      'http://127.0.0.1',
+      'http://127.0.0.1:5500',
+      'http://localhost:5500',
+      'http://localhost:8080',
+      'http://127.0.0.1:5001',
+      'http://localhost:5001',
+      'http://127.0.0.1:5501',
+      'http://localhost:5501'
     ];
-    // Allow requests with no origin (like mobile apps or curl requests during dev)
-    if (!origin || allowedOrigins.includes(origin)) {
+    // Allow requests with no origin (like mobile apps, file:// protocol, or curl)
+    if (!origin || origin === 'null' || allowedOrigins.some(o => origin.startsWith(o))) {
       callback(null, true);
     } else {
       callback(new Error('Cross-Origin Request Blocked by CORS Security Policy.'));

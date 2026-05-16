@@ -39,18 +39,19 @@ const initSchema = async () => {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS \`users\` (
         \`id\`            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-        \`society_id\`    INT UNSIGNED NULL COMMENT 'NULL = Super Admin',
+        \`society_id\`    INT UNSIGNED NULL COMMENT 'NULL = Super Admin or pending registration',
         \`name\`          VARCHAR(120) NOT NULL,
         \`email\`         VARCHAR(180) NOT NULL UNIQUE,
         \`password_hash\` VARCHAR(255) NULL COMMENT 'Nullable for OAuth users',
         \`oauth_provider\` VARCHAR(50) NULL COMMENT 'google, apple, microsoft',
         \`oauth_uid\`     VARCHAR(255) NULL UNIQUE COMMENT 'OAuth unique identifier',
-        \`role\`          ENUM('super_admin','secretary','president','treasurer','committee_member','resident') NOT NULL DEFAULT 'resident',
+        \`role\`          ENUM('super_admin','representative','secretary','president','treasurer','committee_member','resident') NOT NULL DEFAULT 'representative',
         \`phone\`         VARCHAR(15) NULL,
         \`is_active\`     TINYINT(1) NOT NULL DEFAULT 1,
         \`last_login_at\` DATETIME NULL,
         \`created_at\`    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         \`updated_at\`    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        CONSTRAINT \`fk_users_society\` FOREIGN KEY (\`society_id\`) REFERENCES \`societies\`(\`id\`) ON DELETE CASCADE,
         INDEX \`idx_society_role\` (\`society_id\`, \`role\`),
         INDEX \`idx_email\` (\`email\`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

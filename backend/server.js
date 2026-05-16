@@ -17,7 +17,18 @@ const PORT = process.env.PORT || 5000;
 app.use(helmetMiddleware);
 app.use(corsMiddleware);
 app.use(globalRateLimiter);
-app.use(express.json({ limit: '10mb' }));
+// Strict JSON Parsing with Content-Type Verification to block MIME type confusion & oversized payloads
+app.use(express.json({ 
+  limit: '10mb',
+  verify: (req, res, buf, encoding) => {
+    try {
+      JSON.parse(buf);
+    } catch (e) {
+      res.status(400).json({ success: false, message: 'Malformed JSON payload detected.' });
+      throw new Error('Invalid JSON');
+    }
+  }
+}));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Health Check Endpoint for Load Balancers & Monitoring

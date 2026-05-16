@@ -23,6 +23,8 @@
         <link href="../css/style.css" rel="stylesheet" type="text/css" id="theme-default" />
         <link href="../css/rtl-style.css" rel="stylesheet" type="text/css" id="rtl-theme-default" disabled="disabled" />
         <link href="../css/colors/default-color.css" rel="stylesheet" type="text/css" id="theme-color" />
+
+        <script src="https://accounts.google.com/gsi/client" async defer></script>
         <style>
             /* Center and resize checkboxes */
             .custom-control-label::before, 
@@ -39,7 +41,7 @@
             }
         </style>
     
-        <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; frame-src 'self' https://www.youtube.com;">
+        <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' http://127.0.0.1:5000 http://localhost:5000 https://accounts.google.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; frame-src 'self' https://accounts.google.com https://www.youtube.com;">
     </head>
     <body>
         <!--* box-wrapper --> 
@@ -80,11 +82,11 @@
                                     <div id="step1" class="wizard-step">
                                         <p class="text-center text-muted mb-4" style="font-size: 14px; margin-top: -15px;">Step 1 of 3: Representative Details</p>
                                         
-                                        <!-- Google OAuth Button -->
-                                        <div class="form-group mb-3">
-                                            <button type="button" class="btn btn-outline-secondary btn-full" style="height: 50px; display: flex; align-items: center; justify-content: center; background: #fff; border: 1px solid #ddd; color: #444; border-radius: 6px; font-weight: 600; font-size: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);" onclick="initGoogleLogin()">
-                                                <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google Logo" style="width: 22px; height: 22px; margin-right: 12px;">
-                                                Continue with Google
+                                        <!-- Google OAuth Button Container -->
+                                        <div class="form-group mb-3" id="googleButtonContainer" style="min-height: 44px; display: flex; justify-content: center;">
+                                            <button type="button" class="btn btn-outline-secondary btn-full" style="height: 50px; display: flex; align-items: center; justify-content: center; background: #fff; border: 1px solid #ddd; color: #444; border-radius: 6px; font-weight: 600; font-size: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                                                <div class="spinner-border spinner-border-sm text-primary mr-2" role="status"></div>
+                                                Loading secure Google login...
                                             </button>
                                         </div>
 
@@ -94,17 +96,40 @@
                                             <hr class="flex-grow-1" style="border-top: 1px solid #ddd; margin: 0;">
                                         </div>
 
+                                        <div id="step1Alert" class="alert mb-3" style="display: none; border-radius: 6px; font-size: 14px; padding: 12px 16px; font-weight: 600;"></div>
+
                                         <div class="form-group">
-                                            <input type="text" class="form-control" placeholder="Your Full Name" required="required">
+                                            <input type="text" id="repNameInput" class="form-control" placeholder="Your Full Name" required="required">
+                                        </div>
+                                        <div class="form-group mb-3">
+                                            <input type="email" id="repEmailInput" class="form-control mb-1" placeholder="Enter Email Address" required="required" oninput="checkEmailDebounced(this.value)">
+                                            <div id="emailFeedback" style="display: none; font-weight: 600; font-size: 12px; padding-left: 4px;"></div>
                                         </div>
                                         <div class="form-group">
-                                            <input type="email" class="form-control" placeholder="Enter Email Address" required="required">
+                                            <select id="userRoleSelect" class="form-control" style="height: 50px; font-weight: 500; color: #444; border-radius: 6px;" required="required">
+                                                <option value="representative" selected>Official Representative</option>
+                                                <option value="secretary">Society Secretary</option>
+                                                <option value="president">Society President</option>
+                                                <option value="treasurer">Society Treasurer</option>
+                                                <option value="committee_member">Committee Member</option>
+                                            </select>
                                         </div>
-                                        <div class="form-group">
-                                            <input type="password" class="form-control" placeholder="Create Password" required="required">
+                                        <div class="form-group mb-3">
+                                            <input type="password" id="repPasswordInput" class="form-control mb-1" placeholder="Create Strong Password" required="required" oninput="checkPasswordStrength(this.value)">
+                                            <div id="passwordMeterContainer" style="display: none; background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 6px; padding: 10px 12px; margin-top: 8px;">
+                                                <div class="progress mb-2" style="height: 6px; border-radius: 3px; background-color: #e9ecef;">
+                                                    <div id="passwordProgressBar" class="progress-bar" role="progressbar" style="width: 0%; transition: width 0.3s ease;"></div>
+                                                </div>
+                                                <div style="font-size: 11px; font-weight: 600; display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
+                                                    <span id="reqChar" style="color: #dc3545;">✗ 8+ Characters</span>
+                                                    <span id="reqUpper" style="color: #dc3545;">✗ 1 Uppercase</span>
+                                                    <span id="reqNum" style="color: #dc3545;">✗ 1 Number</span>
+                                                    <span id="reqSpec" style="color: #dc3545;">✗ 1 Special Char (@$!%*?&#)</span>
+                                                </div>
+                                            </div>
                                         </div>
                                         <div class="form-group" style="margin-top: 25px;">
-                                            <button type="button" class="btn btn-primary btn-full" style="height: 50px; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; white-space: nowrap;" onclick="showStep(2)">Next Step &rarr;</button>
+                                            <button type="button" class="btn btn-primary btn-full" style="height: 50px; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; white-space: nowrap;" onclick="submitStep1()">Next Step &rarr;</button>
                                         </div>
                                         <div class="text-center mt-4">
                                             <span style="font-size: 14px; color: #666;">Already have an account? <a href="../login/" style="color: #1A4A8A; font-weight: 600;">Sign in</a></span>
@@ -114,36 +139,46 @@
                                     <!-- Step 2: Society Details -->
                                     <div id="step2" class="wizard-step" style="display: none;">
                                         <p class="text-center text-muted mb-4" style="font-size: 14px; margin-top: -15px;">Step 2 of 3: Society Profile</p>
+                                        
+                                        <div id="step2Alert" class="alert mb-3" style="display: none; border-radius: 6px; font-size: 14px; padding: 12px 16px; font-weight: 600;"></div>
+
                                         <div class="form-group">
                                             <input type="text" id="societyNameInput" class="form-control" placeholder="Society/RWA Name" required="required" oninput="updateSubdomain(this.value)">
                                         </div>
                                         <div class="form-group">
-                                            <input type="text" class="form-control" placeholder="City" required="required">
+                                            <input type="text" id="societyAddressInput" class="form-control" placeholder="Street Address / Locality" required="required">
+                                        </div>
+                                        <div class="form-group d-flex" style="gap: 10px;">
+                                            <input type="text" id="societyCityInput" class="form-control" placeholder="City" required="required">
+                                            <input type="text" id="societyStateInput" class="form-control" placeholder="State" required="required">
+                                            <input type="text" id="societyPincodeInput" class="form-control" placeholder="PIN Code" required="required">
+                                        </div>
+                                        <div class="form-group d-flex" style="gap: 10px;">
+                                            <input type="number" id="societyUnitsInput" class="form-control" placeholder="Total Units (approx)" required="required">
+                                            <input type="text" id="societyRcsInput" class="form-control" placeholder="RCS Reg No. (Optional)">
                                         </div>
                                         <div class="form-group">
-                                            <input type="number" class="form-control" placeholder="Total Units (approx)" required="required">
-                                        </div>
-                                        <div class="form-group">
-                                            <input type="text" class="form-control" placeholder="RCS Reg No. (Optional)">
-                                        </div>
-                                        <div class="form-group">
-                                            <input type="text" class="form-control" placeholder="RERA ID (Optional)">
+                                            <input type="text" id="societyReraInput" class="form-control" placeholder="RERA ID (Optional)">
                                         </div>
                                         <div class="form-group d-flex" style="gap: 15px; margin-top: 25px;">
                                             <button type="button" class="btn btn-secondary" style="flex: 1; height: 50px; display: flex; align-items: center; justify-content: center; background: #6c757d; border: none; color: #fff; border-radius: 6px; font-weight: 700; font-size: 15px; white-space: nowrap; padding: 0 15px;" onclick="showStep(1)">&larr; Back</button>
-                                            <button type="button" class="btn btn-primary" style="flex: 1; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-weight: 700; font-size: 15px; white-space: nowrap; padding: 0 15px; margin-left: 0 !important;" onclick="showStep(3)">Next Step &rarr;</button>
+                                            <button type="button" class="btn btn-primary" style="flex: 1; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-weight: 700; font-size: 15px; white-space: nowrap; padding: 0 15px; margin-left: 0 !important;" onclick="submitStep2()">Next Step &rarr;</button>
                                         </div>
                                     </div>
 
                                     <!-- Step 3: Subdomain Setup -->
                                     <div id="step3" class="wizard-step" style="display: none;">
                                         <p class="text-center text-muted mb-4" style="font-size: 14px; margin-top: -15px;">Step 3 of 3: Portal Web Address</p>
+                                        
+                                        <div id="step3Alert" class="alert mb-3" style="display: none; border-radius: 6px; font-size: 14px; padding: 12px 16px; font-weight: 600;"></div>
+
                                         <div class="form-group mb-4">
                                             <label style="font-size: 14px; font-weight: 600; margin-bottom: 8px; display: block; color: #333;">Your Trial Portal URL</label>
                                             <div style="display: flex; align-items: center; background: #f8f9fa; border: 1px solid #ced4da; border-radius: 6px; padding: 4px 12px;">
-                                                <input type="text" id="subdomainInput" class="form-control" placeholder="societyname" style="border: none; background: transparent; padding: 8px 0; box-shadow: none; font-weight: 600; color: #1A4A8A; height: auto;" required="required">
+                                                <input type="text" id="subdomainInput" class="form-control" placeholder="societyname" style="border: none; background: transparent; padding: 8px 0; box-shadow: none; font-weight: 600; color: #1A4A8A; height: auto;" required="required" oninput="checkDomainDebounced(this.value)">
                                                 <span style="font-weight: 600; color: #6c757d; padding-left: 8px; font-size: 15px;">.propertease.in</span>
                                             </div>
+                                            <div id="subdomainFeedback" class="mt-1" style="display: none; font-weight: 600; font-size: 12px; padding-left: 4px;"></div>
                                             <small class="text-muted mt-2 d-block" style="font-size: 12px;">Your instant portal is ready immediately for testing. You can easily connect your official custom domain (e.g., mysociety.com) later inside your dashboard.</small>
                                         </div>
                                         <div class="mb-4 text-left" style="padding-left: 5px; margin-bottom: 25px;">
@@ -158,7 +193,7 @@
                                         </div>
                                         <div class="form-group d-flex" style="gap: 15px;">
                                             <button type="button" class="btn btn-secondary" style="flex: 1; height: 50px; display: flex; align-items: center; justify-content: center; background: #6c757d; border: none; color: #fff; border-radius: 6px; font-weight: 700; font-size: 15px; white-space: nowrap; padding: 0 15px;" onclick="showStep(2)">&larr; Back</button>
-                                            <button type="submit" class="btn btn-primary" style="flex: 1; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-weight: 700; font-size: 15px; white-space: nowrap; padding: 0 15px; margin-left: 0 !important;">Complete Setup</button>
+                                            <button type="button" class="btn btn-primary" style="flex: 1; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-weight: 700; font-size: 15px; white-space: nowrap; padding: 0 15px; margin-left: 0 !important;" onclick="submitStep3()">Complete Setup</button>
                                         </div>
                                     </div>
                                 </form>
@@ -189,22 +224,298 @@
                 $('.wizard-step').hide();
                 $('#step' + step).fadeIn(300);
             }
+
+            function showAlert(step, message, isSuccess = false) {
+                const alertBox = $('#step' + step + 'Alert');
+                alertBox.removeClass('alert-danger alert-success')
+                        .addClass(isSuccess ? 'alert-success' : 'alert-danger')
+                        .html(message)
+                        .slideDown(200);
+            }
+
+            let emailTimeout = null;
+            function checkEmailDebounced(email) {
+                $('#step1Alert').slideUp(200);
+                const feedback = $('#emailFeedback');
+                if (!email || !email.includes('@')) {
+                    feedback.hide();
+                    return;
+                }
+                clearTimeout(emailTimeout);
+                emailTimeout = setTimeout(() => {
+                    fetch('http://127.0.0.1:5000/api/v1/auth/check-email?email=' + encodeURIComponent(email))
+                        .then(r => r.json())
+                        .then(data => {
+                            if (data.success && data.available) {
+                                feedback.css('color', '#28a745').html('✓ Email is available').slideDown(150);
+                            } else {
+                                feedback.css('color', '#dc3545').html('✗ Email already registered in our system').slideDown(150);
+                            }
+                        }).catch(e => console.error(e));
+                }, 400);
+            }
+
+            let domainTimeout = null;
+            function checkDomainDebounced(domain) {
+                $('#step3Alert').slideUp(200);
+                const feedback = $('#subdomainFeedback');
+                if (!domain) {
+                    feedback.hide();
+                    return;
+                }
+                clearTimeout(domainTimeout);
+                const token = localStorage.getItem('token') || '';
+                domainTimeout = setTimeout(() => {
+                    fetch('http://127.0.0.1:5000/api/v1/societies/check-domain?domain=' + encodeURIComponent(domain), {
+                        headers: { 'Authorization': 'Bearer ' + token }
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success && data.available) {
+                            feedback.css('color', '#28a745').html('✓ Domain ' + data.fullDomain + ' is available!').slideDown(150);
+                        } else {
+                            feedback.css('color', '#dc3545').html('✗ Domain ' + (data.fullDomain || domain) + ' is already taken').slideDown(150);
+                        }
+                    }).catch(e => console.error(e));
+                }, 400);
+            }
+
+            let isPasswordStrong = false;
+            function checkPasswordStrength(password) {
+                const meter = $('#passwordMeterContainer');
+                if (!password) {
+                    meter.hide();
+                    isPasswordStrong = false;
+                    return;
+                }
+                meter.slideDown(150);
+                
+                const hasChar = password.length >= 8;
+                const hasUpper = /[A-Z]/.test(password);
+                const hasNum = /[0-9]/.test(password);
+                const hasSpec = /[@$!%*?&#^()_\-+=\[\]{}|\\:;"'<>,.~`/]/.test(password);
+                
+                $('#reqChar').css('color', hasChar ? '#28a745' : '#dc3545').html((hasChar ? '✓' : '✗') + ' 8+ Characters');
+                $('#reqUpper').css('color', hasUpper ? '#28a745' : '#dc3545').html((hasUpper ? '✓' : '✗') + ' 1 Uppercase');
+                $('#reqNum').css('color', hasNum ? '#28a745' : '#dc3545').html((hasNum ? '✓' : '✗') + ' 1 Number');
+                $('#reqSpec').css('color', hasSpec ? '#28a745' : '#dc3545').html((hasSpec ? '✓' : '✗') + ' 1 Special Char');
+                
+                let score = 0;
+                if (hasChar) score += 25;
+                if (hasUpper) score += 25;
+                if (hasNum) score += 25;
+                if (hasSpec) score += 25;
+                
+                const bar = $('#passwordProgressBar');
+                bar.css('width', score + '%');
+                if (score <= 25) bar.css('background-color', '#dc3545');
+                else if (score <= 75) bar.css('background-color', '#ffc107');
+                else bar.css('background-color', '#28a745');
+                
+                isPasswordStrong = (score === 100);
+            }
             
             function updateSubdomain(val) {
                 var slug = val.toLowerCase().replace(/[^a-z0-9]/g, '');
                 $('#subdomainInput').val(slug);
+                checkDomainDebounced(slug);
             }
 
-            function initGoogleLogin() {
-                alert('Simulating Google OAuth verification...');
-                showStep(2);
+            // Google OAuth JWT Decoder Helper
+            function decodeJwtResponse(token) {
+                var base64Url = token.split('.')[1];
+                var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                return JSON.parse(jsonPayload);
+            }
+
+            function handleGoogleResponse(response) {
+                const token = response.credential;
+                const decoded = decodeJwtResponse(token);
+                const role = $('#userRoleSelect').val() || 'representative';
+
+                $('#googleButtonContainer').html('<div class="text-center py-2"><div class="spinner-border text-primary" role="status"></div><span class="ml-2 font-weight-bold text-primary">Authenticating...</span></div>');
+
+                console.log('[Auth] Initiating Google login fetch to http://127.0.0.1:5000/api/v1/auth/google');
+
+                fetch('http://127.0.0.1:5000/api/v1/auth/google', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        token: token,
+                        email: decoded.email,
+                        name: decoded.name,
+                        googleId: decoded.sub,
+                        role: role
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    console.log('[Auth] Response payload:', data);
+                    if (data.success) {
+                        localStorage.setItem('token', data.token);
+                        localStorage.setItem('user', JSON.stringify(data.user));
+                        showStep(2);
+                    } else {
+                        showAlert(1, 'Google Authentication failed: ' + (data.message || 'Error connecting to account.'));
+                        $('#googleButtonContainer').html('<button type="button" class="btn btn-outline-danger btn-full" onclick="window.location.reload()">Authentication Failed - Retry</button>');
+                    }
+                })
+                .catch(err => {
+                    console.error('[Auth Diagnostic Error] Fetch failed:', err);
+                    showAlert(1, 'Cannot reach backend server at http://127.0.0.1:5000. Please verify your connection.');
+                });
+            }
+
+            function submitStep1() {
+                const name = $('#repNameInput').val();
+                const email = $('#repEmailInput').val();
+                const role = $('#userRoleSelect').val();
+                const password = $('#repPasswordInput').val();
+
+                if (!name || !email || !password) {
+                    showAlert(1, 'Please complete all representative details.');
+                    return;
+                }
+                
+                if (!isPasswordStrong) {
+                    showAlert(1, 'Please ensure your password meets all strong password requirements.');
+                    return;
+                }
+
+                fetch('http://127.0.0.1:5000/api/v1/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, role, password })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        localStorage.setItem('token', data.token);
+                        localStorage.setItem('user', JSON.stringify(data.user));
+                        showStep(2);
+                    } else {
+                        showAlert(1, 'Registration error: ' + (data.message || (data.errors ? data.errors[0].msg : 'Please verify inputs')));
+                    }
+                })
+                .catch(err => {
+                    showAlert(1, 'Server connection error. Please verify backend is operational.');
+                    console.error(err);
+                });
+            }
+
+            function submitStep2() {
+                const name = $('#societyNameInput').val();
+                const registrationNumber = $('#societyRcsInput').val() || 'RCS-' + Math.floor(Math.random() * 100000);
+                const totalUnits = $('#societyUnitsInput').val();
+                const address = $('#societyAddressInput').val();
+                const city = $('#societyCityInput').val();
+                const state = $('#societyStateInput').val();
+                const pincode = $('#societyPincodeInput').val();
+                const token = localStorage.getItem('token');
+
+                if (!name || !totalUnits || !address || !city || !state || !pincode) {
+                    showAlert(2, 'Please complete all mandatory society address and unit details.');
+                    return;
+                }
+
+                if (!token) {
+                    showAlert(2, 'Authentication session expired. Please sign in again.');
+                    setTimeout(() => showStep(1), 1500);
+                    return;
+                }
+
+                fetch('http://127.0.0.1:5000/api/v1/societies/onboard', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({ name, registrationNumber, totalUnits: parseInt(totalUnits), address, city, state, pincode })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        localStorage.setItem('society', JSON.stringify(data.society));
+                        showStep(3);
+                    } else {
+                        showAlert(2, 'Error onboarding society: ' + (data.message || (data.errors ? data.errors[0].msg : 'Invalid inputs')));
+                    }
+                })
+                .catch(err => {
+                    showAlert(2, 'Server connection error while registering society profile.');
+                    console.error(err);
+                });
+            }
+
+            function submitStep3() {
+                const domain = $('#subdomainInput').val() + '.propertease.in';
+                const token = localStorage.getItem('token');
+
+                if (!$('#termsCheck').is(':checked') || !$('#privacyCheck').is(':checked')) {
+                    showAlert(3, 'Please accept the Terms and Privacy Policy to activate your portal.');
+                    return;
+                }
+
+                fetch('http://127.0.0.1:5000/api/v1/societies/domain', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({ domain: domain })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        $('.register-form-container').html(
+                            '<div class="text-center py-5">' +
+                            '<div style="width: 80px; height: 80px; background: #d4edda; color: #28a745; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 40px; margin: 0 auto 20px;">✓</div>' +
+                            '<h2 class="mb-3" style="color: #1A4A8A;">Society Portal Active!</h2>' +
+                            '<p class="text-muted mb-4" style="font-size: 16px;">Your 7-Day Free Trial portal is operational at:<br><strong style="color: #28a745; font-size: 18px;"><a href="http://' + domain + '" target="_blank">' + domain + '</a></strong></p>' +
+                            '<a href="../login/" class="btn btn-primary" style="height: 50px; display: inline-flex; align-items: center; justify-content: center; padding: 0 35px; font-weight: 700; border-radius: 6px;">Go to Login &rarr;</a>' +
+                            '</div>'
+                        );
+                    } else {
+                        showAlert(3, 'Domain activation error: ' + (data.message || (data.errors ? data.errors[0].msg : 'Domain unavailable')));
+                    }
+                })
+                .catch(err => {
+                    showAlert(3, 'Server connection error while activating portal web address.');
+                    console.error(err);
+                });
             }
 
             $(document).ready(function() {
-                $('#registerForm').on('submit', function(e) {
-                    e.preventDefault();
-                    alert('Registration complete! Setting up your society dashboard...');
-                });
+                // Initialize Google Identity Services
+                if (window.google && google.accounts) {
+                    google.accounts.id.initialize({
+                        client_id: "620560415092-f5ori9lur924dbhb89pneil0kdstihor.apps.googleusercontent.com",
+                        callback: handleGoogleResponse
+                    });
+                    google.accounts.id.renderButton(
+                        document.getElementById("googleButtonContainer"),
+                        { theme: "outline", size: "large", width: "320" }
+                    );
+                } else {
+                    // Fallback if Google scripts are slow or blocked
+                    setTimeout(function() {
+                        if (window.google && google.accounts) {
+                            google.accounts.id.initialize({
+                                client_id: "620560415092-f5ori9lur924dbhb89pneil0kdstihor.apps.googleusercontent.com",
+                                callback: handleGoogleResponse
+                            });
+                            google.accounts.id.renderButton(
+                                document.getElementById("googleButtonContainer"),
+                                { theme: "outline", size: "large", width: "320" }
+                            );
+                        }
+                    }, 1000);
+                }
             });
         </script>
     </body>

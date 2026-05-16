@@ -29,7 +29,7 @@
             </ul>
         </div>
         <div class="navbar-right">
-            <div class="menu-button">
+            <div class="menu-button" id="headerAuthContainer">
                 <a href="login/">
                     <div class="btn btn-outline-primary btn-light">sign in</div>
                 </a>
@@ -37,3 +37,31 @@
         </div>
     </div>
 </header>
+
+<script>
+setTimeout(function() {
+    const token = localStorage.getItem('token');
+    const userStr = localStorage.getItem('user');
+    const societyStr = localStorage.getItem('society');
+    
+    if (token || userStr) {
+        let portalUrl = '#';
+        try {
+            if (societyStr) {
+                const s = JSON.parse(societyStr);
+                if (s.custom_domain) portalUrl = 'http://' + s.custom_domain;
+            }
+        } catch(e) {}
+
+        const isSubpage = window.location.pathname.includes('/about/') || window.location.pathname.includes('/contact/') || window.location.pathname.includes('/register/') || window.location.pathname.includes('/login/');
+        const hrefUrl = portalUrl !== '#' ? portalUrl : (isSubpage ? '../' : './');
+        const targetAttr = portalUrl !== '#' ? ' target="_blank"' : '';
+
+        $('#headerAuthContainer').html(
+            '<a href="' + hrefUrl + '"' + targetAttr + '>' +
+                '<div class="btn btn-outline-primary btn-light">dashboard</div>' +
+            '</a>'
+        );
+    }
+}, 150);
+</script>
