@@ -76,32 +76,92 @@
                             <div class="register-form-container" style="padding-top: 30px;">
                                 <h3 class="mb-4 text-center">Create your account</h3>
                                 <form id="registerForm" method="POST" action="javascript:void(0);">
-                                            <div class="form-group">
-                                                <input type="text" class="form-control" placeholder="Society/RWA Name">
+                                    <!-- Step 1: Representative Details -->
+                                    <div id="step1" class="wizard-step">
+                                        <p class="text-center text-muted mb-4" style="font-size: 14px; margin-top: -15px;">Step 1 of 3: Representative Details</p>
+                                        
+                                        <!-- Google OAuth Button -->
+                                        <div class="form-group mb-3">
+                                            <button type="button" class="btn btn-outline-secondary btn-full" style="height: 50px; display: flex; align-items: center; justify-content: center; background: #fff; border: 1px solid #ddd; color: #444; border-radius: 6px; font-weight: 600; font-size: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);" onclick="initGoogleLogin()">
+                                                <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google Logo" style="width: 22px; height: 22px; margin-right: 12px;">
+                                                Continue with Google
+                                            </button>
+                                        </div>
+
+                                        <div class="d-flex align-items-center my-4">
+                                            <hr class="flex-grow-1" style="border-top: 1px solid #ddd; margin: 0;">
+                                            <span class="mx-3 text-muted" style="font-size: 13px; font-weight: 600; text-transform: uppercase;">Or sign up with email</span>
+                                            <hr class="flex-grow-1" style="border-top: 1px solid #ddd; margin: 0;">
+                                        </div>
+
+                                        <div class="form-group">
+                                            <input type="text" class="form-control" placeholder="Your Full Name" required="required">
+                                        </div>
+                                        <div class="form-group">
+                                            <input type="email" class="form-control" placeholder="Enter Email Address" required="required">
+                                        </div>
+                                        <div class="form-group">
+                                            <input type="password" class="form-control" placeholder="Create Password" required="required">
+                                        </div>
+                                        <div class="form-group" style="margin-top: 25px;">
+                                            <button type="button" class="btn btn-primary btn-full" style="height: 50px; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; white-space: nowrap;" onclick="showStep(2)">Next Step &rarr;</button>
+                                        </div>
+                                        <div class="text-center mt-4">
+                                            <span style="font-size: 14px; color: #666;">Already have an account? <a href="../login/" style="color: #1A4A8A; font-weight: 600;">Sign in</a></span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Step 2: Society Details -->
+                                    <div id="step2" class="wizard-step" style="display: none;">
+                                        <p class="text-center text-muted mb-4" style="font-size: 14px; margin-top: -15px;">Step 2 of 3: Society Profile</p>
+                                        <div class="form-group">
+                                            <input type="text" id="societyNameInput" class="form-control" placeholder="Society/RWA Name" required="required" oninput="updateSubdomain(this.value)">
+                                        </div>
+                                        <div class="form-group">
+                                            <input type="text" class="form-control" placeholder="City" required="required">
+                                        </div>
+                                        <div class="form-group">
+                                            <input type="number" class="form-control" placeholder="Total Units (approx)" required="required">
+                                        </div>
+                                        <div class="form-group">
+                                            <input type="text" class="form-control" placeholder="RCS Reg No. (Optional)">
+                                        </div>
+                                        <div class="form-group">
+                                            <input type="text" class="form-control" placeholder="RERA ID (Optional)">
+                                        </div>
+                                        <div class="form-group d-flex" style="gap: 15px; margin-top: 25px;">
+                                            <button type="button" class="btn btn-secondary" style="flex: 1; height: 50px; display: flex; align-items: center; justify-content: center; background: #6c757d; border: none; color: #fff; border-radius: 6px; font-weight: 700; font-size: 15px; white-space: nowrap; padding: 0 15px;" onclick="showStep(1)">&larr; Back</button>
+                                            <button type="button" class="btn btn-primary" style="flex: 1; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-weight: 700; font-size: 15px; white-space: nowrap; padding: 0 15px; margin-left: 0 !important;" onclick="showStep(3)">Next Step &rarr;</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Step 3: Subdomain Setup -->
+                                    <div id="step3" class="wizard-step" style="display: none;">
+                                        <p class="text-center text-muted mb-4" style="font-size: 14px; margin-top: -15px;">Step 3 of 3: Portal Web Address</p>
+                                        <div class="form-group mb-4">
+                                            <label style="font-size: 14px; font-weight: 600; margin-bottom: 8px; display: block; color: #333;">Your Trial Portal URL</label>
+                                            <div style="display: flex; align-items: center; background: #f8f9fa; border: 1px solid #ced4da; border-radius: 6px; padding: 4px 12px;">
+                                                <input type="text" id="subdomainInput" class="form-control" placeholder="societyname" style="border: none; background: transparent; padding: 8px 0; box-shadow: none; font-weight: 600; color: #1A4A8A; height: auto;" required="required">
+                                                <span style="font-weight: 600; color: #6c757d; padding-left: 8px; font-size: 15px;">.propertease.in</span>
                                             </div>
-                                            <div class="form-group">
-                                                <input type="text" class="form-control" placeholder="Your Full Name">
+                                            <small class="text-muted mt-2 d-block" style="font-size: 12px;">Your instant portal is ready immediately for testing. You can easily connect your official custom domain (e.g., mysociety.com) later inside your dashboard.</small>
+                                        </div>
+                                        <div class="mb-4 text-left" style="padding-left: 5px; margin-bottom: 25px;">
+                                            <div class="custom-control custom-checkbox" style="margin-bottom: 12px;">
+                                                <input type="checkbox" class="custom-control-input" id="termsCheck" required="required">
+                                                <label class="custom-control-label" for="termsCheck" style="cursor: pointer;">I accept the <a href="#">Terms & Conditions</a></label>
                                             </div>
-                                            <div class="form-group">
-                                                <input type="email" class="form-control" placeholder="Enter Email Address">
+                                            <div class="custom-control custom-checkbox">
+                                                <input type="checkbox" class="custom-control-input" id="privacyCheck" required="required">
+                                                <label class="custom-control-label" for="privacyCheck" style="cursor: pointer;">I acknowledge the <a href="#">Privacy Policy</a></label>
                                             </div>
-                                            <div class="form-group">
-                                                <input type="password" class="form-control" placeholder="Create Password">
-                                            </div>
-                                            <div class="mb-4 text-left" style="padding-left: 5px; margin-bottom: 25px;">
-                                                <div class="custom-control custom-checkbox" style="margin-bottom: 12px;">
-                                                    <input type="checkbox" class="custom-control-input" id="termsCheck" required="required">
-                                                    <label class="custom-control-label" for="termsCheck" style="cursor: pointer;">I accept the <a href="#">Terms & Conditions</a></label>
-                                                </div>
-                                                <div class="custom-control custom-checkbox">
-                                                    <input type="checkbox" class="custom-control-input" id="privacyCheck" required="required">
-                                                    <label class="custom-control-label" for="privacyCheck" style="cursor: pointer;">I acknowledge the <a href="#">Privacy Policy</a></label>
-                                                </div>
-                                            </div>
-                                            <div class="form-group">
-                                                <button class="btn btn-primary btn-full">Register Society</button>
-                                            </div>
-                                        </form>
+                                        </div>
+                                        <div class="form-group d-flex" style="gap: 15px;">
+                                            <button type="button" class="btn btn-secondary" style="flex: 1; height: 50px; display: flex; align-items: center; justify-content: center; background: #6c757d; border: none; color: #fff; border-radius: 6px; font-weight: 700; font-size: 15px; white-space: nowrap; padding: 0 15px;" onclick="showStep(2)">&larr; Back</button>
+                                            <button type="submit" class="btn btn-primary" style="flex: 1; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-weight: 700; font-size: 15px; white-space: nowrap; padding: 0 15px; margin-left: 0 !important;">Complete Setup</button>
+                                        </div>
+                                    </div>
+                                </form>
                             </div>
                         </div>
                     </div>
@@ -124,6 +184,29 @@
         <script src="../js/slick.min.js"></script>
         <!--* Main Js -->
         <script src="../js/dcode.js"></script>
+        <script>
+            function showStep(step) {
+                $('.wizard-step').hide();
+                $('#step' + step).fadeIn(300);
+            }
+            
+            function updateSubdomain(val) {
+                var slug = val.toLowerCase().replace(/[^a-z0-9]/g, '');
+                $('#subdomainInput').val(slug);
+            }
+
+            function initGoogleLogin() {
+                alert('Simulating Google OAuth verification...');
+                showStep(2);
+            }
+
+            $(document).ready(function() {
+                $('#registerForm').on('submit', function(e) {
+                    e.preventDefault();
+                    alert('Registration complete! Setting up your society dashboard...');
+                });
+            });
+        </script>
     </body>
 </html>
 

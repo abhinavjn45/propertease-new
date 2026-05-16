@@ -75,11 +75,25 @@
                             <div class="register-form-container" style="padding-top: 30px;">
                                 <h3 class="mb-4 text-center">Sign In to your account</h3>
                                 <form id="loginForm" method="POST" action="javascript:void(0);">
+                                    <!-- Google OAuth Button -->
+                                    <div class="form-group mb-3">
+                                        <button type="button" class="btn btn-outline-secondary btn-full" style="height: 50px; display: flex; align-items: center; justify-content: center; background: #fff; border: 1px solid #ddd; color: #444; border-radius: 6px; font-weight: 600; font-size: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);" onclick="initGoogleLogin()">
+                                            <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google Logo" style="width: 22px; height: 22px; margin-right: 12px;">
+                                            Sign in with Google
+                                        </button>
+                                    </div>
+
+                                    <div class="d-flex align-items-center my-4">
+                                        <hr class="flex-grow-1" style="border-top: 1px solid #ddd; margin: 0;">
+                                        <span class="mx-3 text-muted" style="font-size: 13px; font-weight: 600; text-transform: uppercase;">Or sign in with email</span>
+                                        <hr class="flex-grow-1" style="border-top: 1px solid #ddd; margin: 0;">
+                                    </div>
+
                                     <div class="form-group">
-                                        <input type="text" class="form-control" placeholder="Enter Email/Username">
+                                        <input type="text" class="form-control" placeholder="Enter Email/Username" required="required">
                                     </div>
                                     <div class="form-group">
-                                        <input type="password" class="form-control" placeholder="Enter Password">
+                                        <input type="password" class="form-control" placeholder="Enter Password" required="required">
                                     </div>
                                     <div class="mb-4 text-left" style="padding-left: 5px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center;">
                                         <div class="custom-control custom-checkbox">
@@ -87,11 +101,14 @@
                                             <label class="custom-control-label" for="rememberCheck" style="cursor: pointer;">Remember me</label>
                                         </div>
                                         <div>
-                                            <a href="#" class="forgot-link" style="color: var(--primary-color);">Forgot Password?</a>
+                                            <a href="#" class="forgot-link" style="color: #1A4A8A; font-weight: 600; font-size: 14px;">Forgot Password?</a>
                                         </div>
                                     </div>
-                                    <div class="form-group">
-                                        <button class="btn btn-primary btn-full">Sign In</button>
+                                    <div class="form-group" style="margin-top: 25px;">
+                                        <button type="submit" class="btn btn-primary btn-full" style="height: 50px; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700;">Sign In &rarr;</button>
+                                    </div>
+                                    <div class="text-center mt-4">
+                                        <span style="font-size: 14px; color: #666;">Don't have an account? <a href="../register/" style="color: #1A4A8A; font-weight: 600;">Get Started for Free</a></span>
                                     </div>
                                 </form>
                             </div>
@@ -116,6 +133,18 @@
         <script src="../js/slick.min.js"></script>
         <!--* Main Js -->
         <script src="../js/dcode.js"></script>
+        <script>
+            function initGoogleLogin() {
+                alert('Simulating Google OAuth verification for login...');
+            }
+
+            $(document).ready(function() {
+                $('#loginForm').on('submit', function(e) {
+                    e.preventDefault();
+                    alert('Authenticated successfully! Redirecting to dashboard...');
+                });
+            });
+        </script>
     </body>
 </html>
 
