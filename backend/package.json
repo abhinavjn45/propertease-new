@@ -1,0 +1,24 @@
+{
+  "name": "propertease-backend",
+  "version": "1.0.0",
+  "description": "Zero-breach secure Node.js & Express backend for Propert-Ease SaaS",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "init-schema": "node config/initSchema.js"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.2.0",
+    "express-validator": "^7.0.1",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mysql2": "^3.9.7"
+  },
+  "author": "Propert-Ease Team",
+  "license": "ISC"
+}
