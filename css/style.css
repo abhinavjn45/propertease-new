@@ -1668,20 +1668,23 @@ ul.three-col li{
     border: 10px solid var(--white-color);
     -webkit-border-radius: 50%;
     border-radius: 50%;
-    display: block;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     margin: 0px auto 0px;
-    width: 180px;
-    height: 180px;
+    width: 190px;
+    height: 190px;
     position: absolute;
     -webkit-transform: translateX(-50%);
     transform: translateX(-50%);
     left: 50%;
-    top: -90px;
-    padding: 35px 0;
+    top: -95px;
+    padding: 20px 10px;
 }
 .pricing-plans-two .price-card:before{
-	width: 180px;
-    height: 180px;
+	width: 190px;
+    height: 190px;
     position:absolute;
     z-index:-1; 
     content:"";
@@ -1689,32 +1692,38 @@ ul.three-col li{
     border-radius: 50%;
     -webkit-box-shadow: 0px 0px 20px 0px rgba(0, 0, 0, 0.1);
 	box-shadow: 0px 0px 20px 0px rgba(0, 0, 0, 0.1);
-	top:-90px;
+	top:-95px;
 	left:50%;
 	-webkit-transform: translateX(-50%);
     transform: translateX(-50%);  
 }
 .pricing-plans-two .plan-cost{
-	font-size:60px;
+	font-size:46px;
 	font-weight:700;
 	font-family:"Source Sans Pro", sans-serif;
-	letter-spacing:-1px; 
+	letter-spacing:-0.5px; 
 	color: var(--white-color);
-	line-height:0.8;
-	margin-bottom:5px;  
+	line-height:1;
+	margin-bottom:8px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 .pricing-plans-two .plan-cost .plan-cost-prefix{
-	display:inline;
-	font-size:36px;
+	display:inline-block;
+	font-size:28px;
 	line-height: inherit;
-	vertical-align: super;
-	font-weight:900; 
+	font-weight:700;
+	margin-right: 2px;
 }
 .pricing-plans-two .plan-validity{
 	margin:0;
 	text-transform:uppercase;
 	letter-spacing:0px;
-	font-size:16px;  
+	font-size:13px;
+	font-weight: 600;
+	line-height: 1.2;
+	text-align: center;
 }
 .pricing-plans-two .card-body{
 	padding:0px 30px 50px; 
