@@ -40,7 +40,7 @@
             }
         </style>
     
-        <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' http://127.0.0.1:5000 http://localhost:5000 https://accounts.google.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; frame-src 'self' https://accounts.google.com https://www.youtube.com;">
+        <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' http://127.0.0.1:5000 http://localhost:5000 https://propertease-api-do2f.onrender.com https://accounts.google.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; frame-src 'self' https://accounts.google.com https://www.youtube.com;">
     </head>
     <body>
         <!--* box-wrapper --> 
@@ -75,6 +75,7 @@
                         <div class="form-box">
                             <div class="register-form-container" style="padding-top: 30px;">
                                 <h3 class="mb-4 text-center">Sign In to your account</h3>
+                                <div id="loginAlertBox" class="alert" style="display:none; border-radius: 6px; font-weight: 600; font-size: 14px; padding: 12px 16px; margin-bottom: 20px;"></div>
                                 <form id="loginForm" method="POST" action="javascript:void(0);">
                                     <!-- Google OAuth Button Container -->
                                     <div class="form-group mb-3" id="googleLoginContainer" style="min-height: 44px; display: flex; justify-content: center;">
@@ -133,8 +134,19 @@
         <!--* Slick Slider -->
         <script src="../js/slick.min.js"></script>
         <!--* Main Js -->
+        <script src="../js/config.js"></script>
         <script src="../js/dcode.js"></script>
         <script>
+            const API_BASE = window.APP_CONFIG.getApiBase();
+
+            function showLoginAlert(message, isSuccess = false) {
+                const box = $('#loginAlertBox');
+                box.removeClass('alert-danger alert-success')
+                   .addClass(isSuccess ? 'alert-success' : 'alert-danger')
+                   .html(message)
+                   .slideDown(200);
+            }
+
             function decodeJwtResponse(token) {
                 var base64Url = token.split('.')[1];
                 var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -150,9 +162,9 @@
 
                 $('#googleLoginContainer').html('<div class="text-center py-2"><div class="spinner-border text-primary" role="status"></div><span class="ml-2 font-weight-bold text-primary">Authenticating with Google...</span></div>');
 
-                console.log('[Login] Initiating Google login fetch to http://127.0.0.1:5000/api/v1/auth/google');
+                console.log('[Login] Initiating Google login fetch to ' + API_BASE + '/api/v1/auth/google');
 
-                fetch('http://127.0.0.1:5000/api/v1/auth/google', {
+                fetch(API_BASE + '/api/v1/auth/google', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -180,19 +192,18 @@
                             '</div>'
                         );
                     } else {
-                        alert('Login failed: ' + (data.message || 'Unable to authenticate.'));
-                        window.location.reload();
+                        showLoginAlert('Login failed: ' + (data.message || 'Unable to authenticate.'));
+                        $('#googleLoginContainer').html('<button type="button" class="btn btn-outline-danger btn-full" onclick="window.location.reload()">Authentication Failed - Retry</button>');
                     }
                 })
                 .catch(err => {
                     console.error('[Login Diagnostic Error] Fetch failed:', err);
-                    alert('[v2 API Error] Cannot reach backend server at http://127.0.0.1:5000. Please verify your browser is not blocking local connections or check DevTools Console (F12) for exact network details.');
-                    window.location.reload();
+                    showLoginAlert('Cannot reach backend server. Please verify your connection.');
+                    $('#googleLoginContainer').html('<button type="button" class="btn btn-outline-danger btn-full" onclick="window.location.reload()">Connection Failed - Retry</button>');
                 });
             }
 
             $(document).ready(function() {
-                // Initialize Google Identity Services for Login
                 if (window.google && google.accounts) {
                     google.accounts.id.initialize({
                         client_id: "620560415092-f5ori9lur924dbhb89pneil0kdstihor.apps.googleusercontent.com",
@@ -217,20 +228,20 @@
                     }, 1000);
                 }
 
-                // Regular Email/Password Login submission
                 $('#loginForm').on('submit', function(e) {
                     e.preventDefault();
+                    $('#loginAlertBox').slideUp(150);
                     const email = $('#loginEmailInput').val();
                     const password = $('#loginPasswordInput').val();
 
                     if (!email || !password) {
-                        alert('Please enter your email and password.');
+                        showLoginAlert('Please enter your email and password.');
                         return;
                     }
 
                     $('button[type="submit"]').html('<div class="spinner-border spinner-border-sm mr-2" role="status"></div> Signing in...');
 
-                    fetch('http://127.0.0.1:5000/api/v1/auth/login', {
+                    fetch(API_BASE + '/api/v1/auth/login', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ email, password })
@@ -249,12 +260,12 @@
                                 '</div>'
                             );
                         } else {
-                            alert('Authentication failed: ' + (data.message || (data.errors ? data.errors[0].msg : 'Invalid credentials')));
+                            showLoginAlert('Authentication failed: ' + (data.message || (data.errors ? data.errors[0].msg : 'Invalid credentials')));
                             $('button[type="submit"]').html('Sign In &rarr;');
                         }
                     })
                     .catch(err => {
-                        alert('Server connection error. Please verify backend is running on port 5000.');
+                        showLoginAlert('Server connection error. Please verify backend server is operational.');
                         $('button[type="submit"]').html('Sign In &rarr;');
                         console.error(err);
                     });

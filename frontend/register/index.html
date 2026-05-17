@@ -41,7 +41,7 @@
             }
         </style>
     
-        <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' http://127.0.0.1:5000 http://localhost:5000 https://accounts.google.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; frame-src 'self' https://accounts.google.com https://www.youtube.com;">
+        <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' http://127.0.0.1:5000 http://localhost:5000 https://propertease-api-do2f.onrender.com https://accounts.google.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; frame-src 'self' https://accounts.google.com https://www.youtube.com;">
     </head>
     <body>
         <!--* box-wrapper --> 
@@ -218,8 +218,11 @@
         <!--* Slick Slider -->
         <script src="../js/slick.min.js"></script>
         <!--* Main Js -->
+        <script src="../js/config.js"></script>
         <script src="../js/dcode.js"></script>
         <script>
+            const API_BASE = window.APP_CONFIG.getApiBase();
+
             function showStep(step) {
                 $('.wizard-step').hide();
                 $('#step' + step).fadeIn(300);
@@ -243,7 +246,7 @@
                 }
                 clearTimeout(emailTimeout);
                 emailTimeout = setTimeout(() => {
-                    fetch('http://127.0.0.1:5000/api/v1/auth/check-email?email=' + encodeURIComponent(email))
+                    fetch(API_BASE + '/api/v1/auth/check-email?email=' + encodeURIComponent(email))
                         .then(r => r.json())
                         .then(data => {
                             if (data.success && data.available) {
@@ -266,7 +269,7 @@
                 clearTimeout(domainTimeout);
                 const token = localStorage.getItem('token') || '';
                 domainTimeout = setTimeout(() => {
-                    fetch('http://127.0.0.1:5000/api/v1/societies/check-domain?domain=' + encodeURIComponent(domain), {
+                    fetch(API_BASE + '/api/v1/societies/check-domain?domain=' + encodeURIComponent(domain), {
                         headers: { 'Authorization': 'Bearer ' + token }
                     })
                     .then(r => r.json())
@@ -338,9 +341,9 @@
 
                 $('#googleButtonContainer').html('<div class="text-center py-2"><div class="spinner-border text-primary" role="status"></div><span class="ml-2 font-weight-bold text-primary">Authenticating...</span></div>');
 
-                console.log('[Auth] Initiating Google login fetch to http://127.0.0.1:5000/api/v1/auth/google');
+                console.log('[Auth] Initiating Google login fetch to ' + API_BASE + '/api/v1/auth/google');
 
-                fetch('http://127.0.0.1:5000/api/v1/auth/google', {
+                fetch(API_BASE + '/api/v1/auth/google', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -365,7 +368,8 @@
                 })
                 .catch(err => {
                     console.error('[Auth Diagnostic Error] Fetch failed:', err);
-                    showAlert(1, 'Cannot reach backend server at http://127.0.0.1:5000. Please verify your connection.');
+                    showAlert(1, 'Cannot reach backend server. Please verify your connection.');
+                    $('#googleButtonContainer').html('<button type="button" class="btn btn-outline-danger btn-full" onclick="window.location.reload()">Connection Failed - Retry</button>');
                 });
             }
 
@@ -385,7 +389,7 @@
                     return;
                 }
 
-                fetch('http://127.0.0.1:5000/api/v1/auth/register', {
+                fetch(API_BASE + '/api/v1/auth/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name, email, role, password })
@@ -427,7 +431,7 @@
                     return;
                 }
 
-                fetch('http://127.0.0.1:5000/api/v1/societies/onboard', {
+                fetch(API_BASE + '/api/v1/societies/onboard', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -460,7 +464,7 @@
                     return;
                 }
 
-                fetch('http://127.0.0.1:5000/api/v1/societies/domain', {
+                fetch(API_BASE + '/api/v1/societies/domain', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
