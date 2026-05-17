@@ -164,7 +164,7 @@ router.post('/google', authRateLimiter, [
 
   // Check if user exists by email or oauth_uid
   const [rows] = await pool.query(
-    'SELECT id, name, email, role, society_id, is_active FROM users WHERE email = ? OR oauth_uid = ?',
+    'SELECT id, name, email, password_hash, oauth_provider, role, society_id, is_active FROM users WHERE email = ? OR oauth_uid = ?',
     [email, googleId]
   );
 
@@ -175,6 +175,16 @@ router.post('/google', authRateLimiter, [
     if (!user.is_active) {
       return res.status(403).json({ success: false, message: 'Your user account has been deactivated.' });
     }
+
+    // Strict Authentication Provider Isolation:
+    // If the account has a password hash and wasn't explicitly created as a Google OAuth account, block OAuth access.
+    if (user.password_hash && user.oauth_provider !== 'google') {
+      return res.status(403).json({
+        success: false,
+        message: 'This account was registered using email and password. Please sign in using your email and password.'
+      });
+    }
+
     // Update last login timestamp and ensure oauth linkage
     await pool.query('UPDATE users SET last_login_at = NOW(), oauth_provider = ?, oauth_uid = ? WHERE id = ?', [
       'google', googleId, user.id

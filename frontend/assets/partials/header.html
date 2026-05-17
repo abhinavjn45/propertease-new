@@ -39,14 +39,27 @@
 </header>
 
 <script>
+window.handleGlobalLogout = function() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    localStorage.removeItem('society');
+    const isSub = window.location.pathname.includes('/about/') || window.location.pathname.includes('/contact/') || window.location.pathname.includes('/register/') || window.location.pathname.includes('/login/');
+    window.location.href = isSub ? '../' : './';
+};
+
 setTimeout(function() {
     const token = localStorage.getItem('token');
     const userStr = localStorage.getItem('user');
     const societyStr = localStorage.getItem('society');
     
     if (token || userStr) {
+        let firstName = 'User';
         let portalUrl = '#';
         try {
+            if (userStr) {
+                const u = JSON.parse(userStr);
+                if (u.name) firstName = u.name.split(' ')[0];
+            }
             if (societyStr) {
                 const s = JSON.parse(societyStr);
                 if (s.custom_domain) portalUrl = 'http://' + s.custom_domain;
@@ -58,10 +71,25 @@ setTimeout(function() {
         const targetAttr = portalUrl !== '#' ? ' target="_blank"' : '';
 
         $('#headerAuthContainer').html(
-            '<a href="' + hrefUrl + '"' + targetAttr + '>' +
-                '<div class="btn btn-outline-primary btn-light">dashboard</div>' +
-            '</a>'
+            '<div class="dropdown" style="display: inline-block;">' +
+                '<div class="btn btn-outline-primary btn-light dropdown-toggle header-dropdown-btn" data-toggle="dropdown" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer; text-transform: none; display: inline-flex; align-items: center; gap: 6px;">Hi, ' + firstName + '</div>' +
+                '<div class="dropdown-menu dropdown-menu-right" style="margin-top: 10px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.15); border-radius: 8px; min-width: 180px;">' +
+                    '<a class="dropdown-item" href="' + hrefUrl + '"' + targetAttr + ' style="padding: 10px 20px; font-weight: 600; color: #1A4A8A; font-size: 14px;">Visit Dashboard</a>' +
+                    '<div class="dropdown-divider" style="margin: 4px 0;"></div>' +
+                    '<a class="dropdown-item text-danger" href="javascript:void(0)" onclick="handleGlobalLogout()" style="padding: 10px 20px; font-weight: 600; font-size: 14px;">Logout</a>' +
+                '</div>' +
+            '</div>'
         );
     }
 }, 150);
+
+$(document).on('click', '.header-dropdown-btn', function(e) {
+    e.stopPropagation();
+    $(this).parent('.dropdown').find('.dropdown-menu').toggleClass('show');
+});
+$(document).on('click', function(e) {
+    if (!$(e.target).closest('.dropdown').length) {
+        $('.dropdown-menu').removeClass('show');
+    }
+});
 </script>

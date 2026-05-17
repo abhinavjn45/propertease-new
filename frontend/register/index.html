@@ -129,7 +129,7 @@
                                             </div>
                                         </div>
                                         <div class="form-group" style="margin-top: 25px;">
-                                            <button type="button" class="btn btn-primary btn-full" style="height: 50px; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; white-space: nowrap;" onclick="submitStep1()">Next Step &rarr;</button>
+                                            <button type="button" id="btnStep1" class="btn btn-primary btn-full" style="height: 50px; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; white-space: nowrap;" onclick="submitStep1()">Next Step &rarr;</button>
                                         </div>
                                         <div class="text-center mt-4">
                                             <span style="font-size: 14px; color: #666;">Already have an account? <a href="../login/" style="color: #1A4A8A; font-weight: 600;">Sign in</a></span>
@@ -162,7 +162,7 @@
                                         </div>
                                         <div class="form-group d-flex" style="gap: 15px; margin-top: 25px;">
                                             <button type="button" class="btn btn-secondary" style="flex: 1; height: 50px; display: flex; align-items: center; justify-content: center; background: #6c757d; border: none; color: #fff; border-radius: 6px; font-weight: 700; font-size: 15px; white-space: nowrap; padding: 0 15px;" onclick="showStep(1)">&larr; Back</button>
-                                            <button type="button" class="btn btn-primary" style="flex: 1; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-weight: 700; font-size: 15px; white-space: nowrap; padding: 0 15px; margin-left: 0 !important;" onclick="submitStep2()">Next Step &rarr;</button>
+                                            <button type="button" id="btnStep2" class="btn btn-primary" style="flex: 1; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-weight: 700; font-size: 15px; white-space: nowrap; padding: 0 15px; margin-left: 0 !important;" onclick="submitStep2()">Next Step &rarr;</button>
                                         </div>
                                     </div>
 
@@ -193,7 +193,7 @@
                                         </div>
                                         <div class="form-group d-flex" style="gap: 15px;">
                                             <button type="button" class="btn btn-secondary" style="flex: 1; height: 50px; display: flex; align-items: center; justify-content: center; background: #6c757d; border: none; color: #fff; border-radius: 6px; font-weight: 700; font-size: 15px; white-space: nowrap; padding: 0 15px;" onclick="showStep(2)">&larr; Back</button>
-                                            <button type="button" class="btn btn-primary" style="flex: 1; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-weight: 700; font-size: 15px; white-space: nowrap; padding: 0 15px; margin-left: 0 !important;" onclick="submitStep3()">Complete Setup</button>
+                                            <button type="button" id="btnStep3" class="btn btn-primary" style="flex: 1; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-weight: 700; font-size: 15px; white-space: nowrap; padding: 0 15px; margin-left: 0 !important;" onclick="submitStep3()">Complete Setup</button>
                                         </div>
                                     </div>
                                 </form>
@@ -363,13 +363,25 @@
                         showStep(2);
                     } else {
                         showAlert(1, 'Google Authentication failed: ' + (data.message || 'Error connecting to account.'));
-                        $('#googleButtonContainer').html('<button type="button" class="btn btn-outline-danger btn-full" onclick="window.location.reload()">Authentication Failed - Retry</button>');
+                        $('#googleButtonContainer').empty();
+                        if (window.google && google.accounts) {
+                            google.accounts.id.renderButton(
+                                document.getElementById("googleButtonContainer"),
+                                { theme: "outline", size: "large", width: "320" }
+                            );
+                        }
                     }
                 })
                 .catch(err => {
                     console.error('[Auth Diagnostic Error] Fetch failed:', err);
                     showAlert(1, 'Cannot reach backend server. Please verify your connection.');
-                    $('#googleButtonContainer').html('<button type="button" class="btn btn-outline-danger btn-full" onclick="window.location.reload()">Connection Failed - Retry</button>');
+                    $('#googleButtonContainer').empty();
+                    if (window.google && google.accounts) {
+                        google.accounts.id.renderButton(
+                            document.getElementById("googleButtonContainer"),
+                            { theme: "outline", size: "large", width: "320" }
+                        );
+                    }
                 });
             }
 
@@ -389,6 +401,10 @@
                     return;
                 }
 
+                const btn = $('#btnStep1');
+                const origText = btn.html();
+                btn.prop('disabled', true).html('<div class="spinner-border spinner-border-sm mr-2" role="status"></div> Submitting Representative Details...');
+
                 fetch(API_BASE + '/api/v1/auth/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -399,13 +415,16 @@
                     if (data.success) {
                         localStorage.setItem('token', data.token);
                         localStorage.setItem('user', JSON.stringify(data.user));
+                        btn.prop('disabled', false).html(origText);
                         showStep(2);
                     } else {
                         showAlert(1, 'Registration error: ' + (data.message || (data.errors ? data.errors[0].msg : 'Please verify inputs')));
+                        btn.prop('disabled', false).html(origText);
                     }
                 })
                 .catch(err => {
                     showAlert(1, 'Server connection error. Please verify backend is operational.');
+                    btn.prop('disabled', false).html(origText);
                     console.error(err);
                 });
             }
@@ -431,6 +450,10 @@
                     return;
                 }
 
+                const btn = $('#btnStep2');
+                const origText = btn.html();
+                btn.prop('disabled', true).html('<div class="spinner-border spinner-border-sm mr-2" role="status"></div> Submitting Society Profile...');
+
                 fetch(API_BASE + '/api/v1/societies/onboard', {
                     method: 'POST',
                     headers: {
@@ -444,13 +467,16 @@
                 .then(data => {
                     if (data.success) {
                         localStorage.setItem('society', JSON.stringify(data.society));
+                        btn.prop('disabled', false).html(origText);
                         showStep(3);
                     } else {
                         showAlert(2, 'Error onboarding society: ' + (data.message || (data.errors ? data.errors[0].msg : 'Invalid inputs')));
+                        btn.prop('disabled', false).html(origText);
                     }
                 })
                 .catch(err => {
                     showAlert(2, 'Server connection error while registering society profile.');
+                    btn.prop('disabled', false).html(origText);
                     console.error(err);
                 });
             }
@@ -463,6 +489,10 @@
                     showAlert(3, 'Please accept the Terms and Privacy Policy to activate your portal.');
                     return;
                 }
+
+                const btn = $('#btnStep3');
+                const origText = btn.html();
+                btn.prop('disabled', true).html('<div class="spinner-border spinner-border-sm mr-2" role="status"></div> Submitting Domain Setup...');
 
                 fetch(API_BASE + '/api/v1/societies/domain', {
                     method: 'POST',
@@ -486,10 +516,12 @@
                         );
                     } else {
                         showAlert(3, 'Domain activation error: ' + (data.message || (data.errors ? data.errors[0].msg : 'Domain unavailable')));
+                        btn.prop('disabled', false).html(origText);
                     }
                 })
                 .catch(err => {
                     showAlert(3, 'Server connection error while activating portal web address.');
+                    btn.prop('disabled', false).html(origText);
                     console.error(err);
                 });
             }

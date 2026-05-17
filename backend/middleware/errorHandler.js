@@ -1,7 +1,7 @@
 // Centralized Error Handling Middleware to ensure Zero Sensitive Data Leakage
 const errorHandler = (err, req, res, next) => {
   const statusCode = err.statusCode || 500;
-  const isProduction = process.env.NODE_ENV === 'production';
+  const isProduction = process.env.NODE_ENV === 'production' || process.env.RENDER === 'true';
 
   // Log full error internally for debugging
   console.error(`[Error Handler] ${req.method} ${req.originalUrl} -> ${err.message}`, err);

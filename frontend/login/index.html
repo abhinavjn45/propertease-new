@@ -193,13 +193,25 @@
                         );
                     } else {
                         showLoginAlert('Login failed: ' + (data.message || 'Unable to authenticate.'));
-                        $('#googleLoginContainer').html('<button type="button" class="btn btn-outline-danger btn-full" onclick="window.location.reload()">Authentication Failed - Retry</button>');
+                        $('#googleLoginContainer').empty();
+                        if (window.google && google.accounts) {
+                            google.accounts.id.renderButton(
+                                document.getElementById("googleLoginContainer"),
+                                { theme: "outline", size: "large", width: "320" }
+                            );
+                        }
                     }
                 })
                 .catch(err => {
                     console.error('[Login Diagnostic Error] Fetch failed:', err);
                     showLoginAlert('Cannot reach backend server. Please verify your connection.');
-                    $('#googleLoginContainer').html('<button type="button" class="btn btn-outline-danger btn-full" onclick="window.location.reload()">Connection Failed - Retry</button>');
+                    $('#googleLoginContainer').empty();
+                    if (window.google && google.accounts) {
+                        google.accounts.id.renderButton(
+                            document.getElementById("googleLoginContainer"),
+                            { theme: "outline", size: "large", width: "320" }
+                        );
+                    }
                 });
             }
 
@@ -239,7 +251,8 @@
                         return;
                     }
 
-                    $('button[type="submit"]').html('<div class="spinner-border spinner-border-sm mr-2" role="status"></div> Signing in...');
+                    const submitBtn = $('button[type="submit"]');
+                    submitBtn.prop('disabled', true).html('<div class="spinner-border spinner-border-sm mr-2" role="status"></div> Authenticating...');
 
                     fetch(API_BASE + '/api/v1/auth/login', {
                         method: 'POST',
@@ -261,12 +274,12 @@
                             );
                         } else {
                             showLoginAlert('Authentication failed: ' + (data.message || (data.errors ? data.errors[0].msg : 'Invalid credentials')));
-                            $('button[type="submit"]').html('Sign In &rarr;');
+                            submitBtn.prop('disabled', false).html('Sign In &rarr;');
                         }
                     })
                     .catch(err => {
                         showLoginAlert('Server connection error. Please verify backend server is operational.');
-                        $('button[type="submit"]').html('Sign In &rarr;');
+                        submitBtn.prop('disabled', false).html('Sign In &rarr;');
                         console.error(err);
                     });
                 });
