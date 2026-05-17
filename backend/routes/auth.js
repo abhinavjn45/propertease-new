@@ -159,7 +159,7 @@ router.post('/google', authRateLimiter, [
     return res.status(400).json({ success: false, errors: errors.array() });
   }
 
-  const { email, name, googleId, role } = req.body;
+  const { email, name, googleId, role, action } = req.body;
   const userRole = role || 'representative';
 
   // Check if user exists by email or oauth_uid
@@ -190,7 +190,7 @@ router.post('/google', authRateLimiter, [
       'google', googleId, user.id
     ]);
   } else {
-    // Create new OAuth user
+    // Brand new user! Create OAuth account and allow redirection to Step 2 onboarding wizard.
     const [result] = await pool.query(
       'INSERT INTO users (name, email, oauth_provider, oauth_uid, role) VALUES (?, ?, ?, ?, ?)',
       [name, email, 'google', googleId, userRole]
@@ -211,6 +211,7 @@ router.post('/google', authRateLimiter, [
     success: true,
     message: rows.length > 0 ? 'Successfully authenticated via Google.' : 'Google account linked and registered successfully.',
     token,
+    isNewUser: rows.length === 0,
     user: { id: user.id, name: user.name, email: user.email, role: user.role, society_id: user.society_id }
   });
 }));
