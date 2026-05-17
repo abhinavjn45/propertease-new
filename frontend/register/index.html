@@ -179,7 +179,7 @@
                                             <label style="font-size: 14px; font-weight: 600; margin-bottom: 8px; display: block; color: #333;">Your Trial Portal URL</label>
                                             <div style="display: flex; align-items: center; background: #f8f9fa; border: 1px solid #ced4da; border-radius: 6px; padding: 4px 12px;">
                                                 <input type="text" id="subdomainInput" class="form-control" placeholder="societyname" style="border: none; background: transparent; padding: 8px 0; box-shadow: none; font-weight: 600; color: #1A4A8A; height: auto;" required="required" oninput="checkDomainDebounced(this.value)">
-                                                <span style="font-weight: 600; color: #6c757d; padding-left: 8px; font-size: 15px;">.propertease.in</span>
+                                                <span style="font-weight: 600; color: #6c757d; padding-left: 8px; font-size: 15px;">.propertease.co.in</span>
                                             </div>
                                             <div id="subdomainFeedback" class="mt-1" style="display: none; font-weight: 600; font-size: 12px; padding-left: 4px;"></div>
                                             <small class="text-muted mt-2 d-block" style="font-size: 12px;">Your instant portal is ready immediately for testing. You can easily connect your official custom domain (e.g., mysociety.com) later inside your dashboard.</small>
@@ -493,7 +493,7 @@
             }
 
             function submitStep3() {
-                const domain = $('#subdomainInput').val() + '.propertease.in';
+                const domain = $('#subdomainInput').val() + '.propertease.co.in';
                 const token = localStorage.getItem('token');
 
                 if (!$('#termsCheck').is(':checked') || !$('#privacyCheck').is(':checked')) {

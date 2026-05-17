@@ -15,7 +15,7 @@ const initSchema = async () => {
         \`city\`                VARCHAR(100) NOT NULL,
         \`state\`               VARCHAR(100) NOT NULL,
         \`pincode\`             VARCHAR(10) NOT NULL,
-        \`custom_domain\`       VARCHAR(255) NULL UNIQUE COMMENT 'e.g. greenvilla.propertease.in',
+        \`custom_domain\`       VARCHAR(255) NULL UNIQUE COMMENT 'e.g. greenvilla.propertease.co.in',
         \`domain_verified\`     TINYINT(1) NOT NULL DEFAULT 0,
         \`plan\`                ENUM('trial','basic','professional','enterprise') NOT NULL DEFAULT 'trial',
         \`plan_expires_at\`     DATE NULL,

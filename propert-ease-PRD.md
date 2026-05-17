@@ -65,7 +65,7 @@ Propert-Ease is a **multi-tenant SaaS platform** that digitizes the governance, 
 ┌──────────────────────────────────────────────────────────────────┐
 │                        CLOUDFLARE LAYER                          │
 │                                                                  │
-│  [society.propertease.in] ──CNAME──► Cloudflare Workers          │
+│  [society.propertease.co.in] ──CNAME──► Cloudflare Workers          │
 │  [custom-domain.com]      ──CNAME──► Cloudflare Workers          │
 │                                          │                       │
 │              Worker injects:             │                       │
@@ -106,7 +106,7 @@ Propert-Ease is a **multi-tenant SaaS platform** that digitizes the governance, 
 ### 3.1 Cloudflare Workers Script (Reference)
 ```javascript
 // cloudflare-worker.js
-// Deploy this as a Worker Route on *.propertease.in/*
+// Deploy this as a Worker Route on *.propertease.co.in/*
 addEventListener('fetch', event => {
   event.respondWith(handleRequest(event.request))
 })
@@ -285,7 +285,7 @@ CREATE TABLE `societies` (
   `city`                VARCHAR(100) NOT NULL,
   `state`               VARCHAR(100) NOT NULL,
   `pincode`             VARCHAR(10) NOT NULL,
-  `custom_domain`       VARCHAR(255) NULL UNIQUE COMMENT 'e.g. greenvilla.propertease.in',
+  `custom_domain`       VARCHAR(255) NULL UNIQUE COMMENT 'e.g. greenvilla.propertease.co.in',
   `domain_verified`     TINYINT(1) NOT NULL DEFAULT 0,
   `plan`                ENUM('trial','basic','professional','enterprise') NOT NULL DEFAULT 'trial',
   `plan_expires_at`     DATE NULL,
@@ -576,7 +576,7 @@ CREATE TABLE `compliance_alerts` (
 #### Registration Wizard Steps
 - **Step 1:** Society Admin account creation (name, email, password)
 - **Step 2:** Society details (name, RCS no., RERA ID, address, total units)
-- **Step 3:** Choose subdomain (e.g., `greenvilla.propertease.in`) → CNAME instructions displayed
+- **Step 3:** Choose subdomain (e.g., `greenvilla.propertease.co.in`) → CNAME instructions displayed
 
 #### Domain Verification Logic
 ```php

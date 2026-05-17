@@ -50,7 +50,7 @@ router.get('/check-domain', authenticateToken, asyncHandler(async (req, res) => 
     return res.status(400).json({ success: false, available: false, message: 'Domain query parameter required' });
   }
 
-  const fullDomain = domain.includes('.') ? domain.trim().toLowerCase() : `${domain.trim().toLowerCase()}.propertease.in`;
+  const fullDomain = domain.includes('.') ? domain.trim().toLowerCase() : `${domain.trim().toLowerCase()}.propertease.co.in`;
   const [existingDomain] = await pool.query('SELECT id FROM societies WHERE custom_domain = ?', [fullDomain]);
 
   res.status(200).json({
@@ -169,7 +169,7 @@ router.post('/domain', authenticateToken, requireCsrfHeader, globalRateLimiter, 
     message: 'Custom domain registered successfully. Please configure your DNS CNAME records.',
     domainConfig: {
       customDomain: domain,
-      cnameTarget: 'app.propertease.in',
+      cnameTarget: 'app.propertease.co.in',
       verificationStatus: 'Pending DNS Lookup'
     }
   });
