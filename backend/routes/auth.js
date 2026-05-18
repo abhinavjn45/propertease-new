@@ -5,13 +5,20 @@ const { body, validationResult } = require('express-validator');
 const { pool } = require('../config/db');
 const { authRateLimiter } = require('../middleware/security');
 const { asyncHandler } = require('../middleware/errorHandler');
+const { authenticateToken } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
-// Helper to generate secure JWT
+// Helper to generate secure JWT embedding token_version
 const generateToken = (user) => {
   return jwt.sign(
-    { id: user.id, email: user.email, role: user.role, society_id: user.society_id },
+    { 
+      id: user.id, 
+      email: user.email, 
+      role: user.role, 
+      society_id: user.society_id,
+      token_version: user.token_version || 0 
+    },
     process.env.JWT_SECRET || 'super_secure_32_character_random_jwt_secret_key_here',
     { expiresIn: '24h' }
   );
@@ -65,7 +72,7 @@ router.post('/register', authRateLimiter, [
 
   // Insert representative user
   const [result] = await pool.query(
-    'INSERT INTO users (name, email, password_hash, role, phone) VALUES (?, ?, ?, ?, ?)',
+    'INSERT INTO users (name, email, password_hash, role, phone, token_version) VALUES (?, ?, ?, ?, ?, 0)',
     [name, email, passwordHash, userRole, phone || null]
   );
 
@@ -74,7 +81,8 @@ router.post('/register', authRateLimiter, [
     name,
     email,
     role: userRole,
-    society_id: null
+    society_id: null,
+    token_version: 0
   };
 
   const token = generateToken(newUser);
@@ -83,7 +91,7 @@ router.post('/register', authRateLimiter, [
     success: true,
     message: 'User registered successfully. Proceeding to society onboarding.',
     token,
-    user: newUser
+    user: { id: newUser.id, name: newUser.name, email: newUser.email, role: newUser.role, society_id: newUser.society_id }
   });
 }));
 
@@ -103,9 +111,9 @@ router.post('/login', authRateLimiter, [
 
   const { email, password } = req.body;
 
-  // Retrieve user record
+  // Retrieve user record including token_version
   const [rows] = await pool.query(
-    'SELECT id, name, email, password_hash, role, society_id, is_active FROM users WHERE email = ?',
+    'SELECT id, name, email, password_hash, role, society_id, is_active, token_version FROM users WHERE email = ?',
     [email]
   );
 
@@ -116,7 +124,7 @@ router.post('/login', authRateLimiter, [
   const user = rows[0];
 
   if (!user.is_active) {
-    return res.status(403).json({ success: false, message: 'Your user account has been deactivated. Please contact support.' });
+    return res.status(401).json({ success: false, code: 'TOKEN_REVOKED', message: 'Your user account has been deactivated. Please contact support.' });
   }
 
   // Check if OAuth-only user
@@ -162,9 +170,9 @@ router.post('/google', authRateLimiter, [
   const { email, name, googleId, role, action } = req.body;
   const userRole = role || 'representative';
 
-  // Check if user exists by email or oauth_uid
+  // Check if user exists by email or oauth_uid including token_version
   const [rows] = await pool.query(
-    'SELECT id, name, email, password_hash, oauth_provider, role, society_id, is_active FROM users WHERE email = ? OR oauth_uid = ?',
+    'SELECT id, name, email, password_hash, oauth_provider, role, society_id, is_active, token_version FROM users WHERE email = ? OR oauth_uid = ?',
     [email, googleId]
   );
 
@@ -173,11 +181,10 @@ router.post('/google', authRateLimiter, [
   if (rows.length > 0) {
     user = rows[0];
     if (!user.is_active) {
-      return res.status(403).json({ success: false, message: 'Your user account has been deactivated.' });
+      return res.status(401).json({ success: false, code: 'TOKEN_REVOKED', message: 'Your user account has been deactivated.' });
     }
 
     // Strict Authentication Provider Isolation:
-    // If the account has a password hash and wasn't explicitly created as a Google OAuth account, block OAuth access.
     if (user.password_hash && user.oauth_provider !== 'google') {
       return res.status(403).json({
         success: false,
@@ -185,14 +192,13 @@ router.post('/google', authRateLimiter, [
       });
     }
 
-    // Update last login timestamp and ensure oauth linkage
     await pool.query('UPDATE users SET last_login_at = NOW(), oauth_provider = ?, oauth_uid = ? WHERE id = ?', [
       'google', googleId, user.id
     ]);
   } else {
-    // Brand new user! Create OAuth account and allow redirection to Step 2 onboarding wizard.
+    // Brand new user
     const [result] = await pool.query(
-      'INSERT INTO users (name, email, oauth_provider, oauth_uid, role) VALUES (?, ?, ?, ?, ?)',
+      'INSERT INTO users (name, email, oauth_provider, oauth_uid, role, token_version) VALUES (?, ?, ?, ?, ?, 0)',
       [name, email, 'google', googleId, userRole]
     );
 
@@ -201,7 +207,8 @@ router.post('/google', authRateLimiter, [
       name,
       email,
       role: userRole,
-      society_id: null
+      society_id: null,
+      token_version: 0
     };
   }
 
@@ -214,6 +221,45 @@ router.post('/google', authRateLimiter, [
     isNewUser: rows.length === 0,
     user: { id: user.id, name: user.name, email: user.email, role: user.role, society_id: user.society_id }
   });
+}));
+
+/**
+ * @route GET /api/v1/auth/verify
+ * @desc Verify session validity in real-time & return latest user/society info
+ * @access Private
+ */
+router.get('/verify', authenticateToken, asyncHandler(async (req, res) => {
+  const user = req.user;
+  let society = null;
+
+  if (user.society_id) {
+    const [socRows] = await pool.query('SELECT id, name, custom_domain FROM societies WHERE id = ?', [user.society_id]);
+    if (socRows.length > 0) {
+      society = socRows[0];
+    }
+  }
+
+  res.status(200).json({
+    success: true,
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      society_id: user.society_id
+    },
+    society
+  });
+}));
+
+/**
+ * @route POST /api/v1/auth/logout
+ * @desc Securely revoke user session across all devices by incrementing token_version
+ * @access Private
+ */
+router.post('/logout', authenticateToken, asyncHandler(async (req, res) => {
+  await pool.query('UPDATE users SET token_version = token_version + 1 WHERE id = ?', [req.user.id]);
+  res.status(200).json({ success: true, message: 'Session successfully revoked across all devices.' });
 }));
 
 module.exports = router;

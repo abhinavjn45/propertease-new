@@ -39,6 +39,23 @@
 </header>
 
 <script>
+// Secure Single Sign-On (SSO) Ephemeral Token Handoff Interceptor
+(function() {
+    try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const ssoToken = urlParams.get('sso_token');
+        const ssoUser = urlParams.get('sso_user');
+        const ssoSociety = urlParams.get('sso_society');
+        if (ssoToken) {
+            localStorage.setItem('token', ssoToken);
+            if (ssoUser) localStorage.setItem('user', decodeURIComponent(ssoUser));
+            if (ssoSociety) localStorage.setItem('society', decodeURIComponent(ssoSociety));
+            window.history.replaceState({}, document.title, window.location.pathname);
+            console.log('[SSO Handoff] Successfully authenticated session on origin:', window.location.hostname);
+        }
+    } catch(e) { console.error('[SSO Error] Failed handoff:', e); }
+})();
+
 window.handleGlobalLogout = function() {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -67,7 +84,10 @@ setTimeout(function() {
         } catch(e) {}
 
         const isSubpage = window.location.pathname.includes('/about/') || window.location.pathname.includes('/contact/') || window.location.pathname.includes('/register/') || window.location.pathname.includes('/login/');
-        const hrefUrl = portalUrl !== '#' ? portalUrl : (isSubpage ? '../' : './');
+        let hrefUrl = portalUrl !== '#' ? portalUrl : (isSubpage ? '../' : './');
+        if (portalUrl !== '#' && token) {
+            hrefUrl = portalUrl + '/?sso_token=' + encodeURIComponent(token) + '&sso_user=' + encodeURIComponent(userStr || '') + '&sso_society=' + encodeURIComponent(societyStr || '');
+        }
         const targetAttr = portalUrl !== '#' ? ' target="_blank"' : '';
 
         $('#headerAuthContainer').html(
@@ -80,6 +100,42 @@ setTimeout(function() {
                 '</div>' +
             '</div>'
         );
+
+        // Real-Time Zero-Trust Background Session Verification
+        if (token) {
+            let apiUrl = 'https://propertease-api-do2f.onrender.com/api/v1';
+            if (window.APP_CONFIG && window.APP_CONFIG.getApiBase) {
+                apiUrl = window.APP_CONFIG.getApiBase() + '/api/v1';
+            } else if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                apiUrl = 'http://127.0.0.1:5000/api/v1';
+            }
+
+            fetch(apiUrl + '/auth/verify', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            })
+            .then(res => {
+                if (res.status === 401 || res.status === 403) {
+                    throw new Error('TOKEN_REVOKED');
+                }
+                return res.json();
+            })
+            .then(data => {
+                if (data && data.success) {
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    if (data.society) {
+                        localStorage.setItem('society', JSON.stringify(data.society));
+                    }
+                }
+            })
+            .catch(err => {
+                if (err.message === 'TOKEN_REVOKED') {
+                    console.warn('[Zero-Trust Security] Inactive or revoked session detected. Forcing logout.');
+                    window.handleGlobalLogout();
+                } else {
+                    console.warn('[Session Verify] Network/server error during verification. Preserving local session.', err);
+                }
+            });
+        }
     }
 }, 150);
 

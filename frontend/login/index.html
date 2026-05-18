@@ -194,15 +194,23 @@
                             let dashUrl = '../';
                             try {
                                 const sStr = localStorage.getItem('society');
-                                if (sStr) { const sObj = JSON.parse(sStr); if (sObj.custom_domain) dashUrl = 'http://' + sObj.custom_domain; }
+                                if (sStr) {
+                                    const sObj = JSON.parse(sStr);
+                                    if (sObj.custom_domain) {
+                                        const ssoToken = encodeURIComponent(localStorage.getItem('token') || '');
+                                        const ssoUser = encodeURIComponent(localStorage.getItem('user') || '');
+                                        const ssoSociety = encodeURIComponent(localStorage.getItem('society') || '');
+                                        dashUrl = 'http://' + sObj.custom_domain + '/?sso_token=' + ssoToken + '&sso_user=' + ssoUser + '&sso_society=' + ssoSociety;
+                                    }
+                                }
                             } catch(e) {}
 
                             $('.register-form-container').html(
                                 '<div class="text-center py-5">' +
-                                '<div style="width: 80px; height: 80px; background: #d4edda; color: #28a745; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 40px; margin: 0 auto 20px;">✓</div>' +
+                                '<div style="width: 80px; height: 80px; background: #d4edda; color: #28a745; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;"><i class="las la-check-circle" style="font-size: 56px;"></i></div>' +
                                 '<h2 class="mb-3" style="color: #1A4A8A;">Welcome back, ' + data.user.name + '!</h2>' +
                                 '<p class="text-muted mb-4" style="font-size: 16px;">Successfully authenticated via Google OAuth.</p>' +
-                                '<a href="' + dashUrl + '" class="btn btn-primary" style="min-height: 50px; display: inline-flex; align-items: center; justify-content: center; padding: 12px 36px; font-weight: 700; font-size: 16px; border-radius: 6px; white-space: nowrap; text-transform: none !important; line-height: normal;">Go to Dashboard &rarr;</a>' +
+                                '<a href="' + dashUrl + '" class="btn btn-primary" style="min-height: 50px; display: inline-flex; align-items: center; justify-content: center; padding: 12px 36px; font-weight: 700; font-size: 16px; border-radius: 6px; white-space: nowrap; text-transform: none !important; line-height: normal;"><i class="las la-external-link-alt mr-2" style="font-size: 18px;"></i> Go to Dashboard &rarr;</a>' +
                                 '</div>'
                             );
                         }
@@ -297,15 +305,23 @@
                             let dashUrl = '../';
                             try {
                                 const sStr = localStorage.getItem('society');
-                                if (sStr) { const sObj = JSON.parse(sStr); if (sObj.custom_domain) dashUrl = 'http://' + sObj.custom_domain; }
+                                if (sStr) {
+                                    const sObj = JSON.parse(sStr);
+                                    if (sObj.custom_domain) {
+                                        const ssoToken = encodeURIComponent(localStorage.getItem('token') || '');
+                                        const ssoUser = encodeURIComponent(localStorage.getItem('user') || '');
+                                        const ssoSociety = encodeURIComponent(localStorage.getItem('society') || '');
+                                        dashUrl = 'http://' + sObj.custom_domain + '/?sso_token=' + ssoToken + '&sso_user=' + ssoUser + '&sso_society=' + ssoSociety;
+                                    }
+                                }
                             } catch(e) {}
 
                             $('.register-form-container').html(
                                 '<div class="text-center py-5">' +
-                                '<div style="width: 80px; height: 80px; background: #d4edda; color: #28a745; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 40px; margin: 0 auto 20px;">✓</div>' +
+                                '<div style="width: 80px; height: 80px; background: #d4edda; color: #28a745; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;"><i class="las la-check-circle" style="font-size: 56px;"></i></div>' +
                                 '<h2 class="mb-3" style="color: #1A4A8A;">Welcome back, ' + data.user.name + '!</h2>' +
                                 '<p class="text-muted mb-4" style="font-size: 16px;">Successfully authenticated.</p>' +
-                                '<a href="' + dashUrl + '" class="btn btn-primary" style="min-height: 50px; display: inline-flex; align-items: center; justify-content: center; padding: 12px 36px; font-weight: 700; font-size: 16px; border-radius: 6px; white-space: nowrap; text-transform: none !important; line-height: normal;">Go to Dashboard &rarr;</a>' +
+                                '<a href="' + dashUrl + '" class="btn btn-primary" style="min-height: 50px; display: inline-flex; align-items: center; justify-content: center; padding: 12px 36px; font-weight: 700; font-size: 16px; border-radius: 6px; white-space: nowrap; text-transform: none !important; line-height: normal;"><i class="las la-external-link-alt mr-2" style="font-size: 18px;"></i> Go to Dashboard &rarr;</a>' +
                                 '</div>'
                             );
                         } else {

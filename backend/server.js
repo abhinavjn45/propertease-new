@@ -3,6 +3,7 @@ const dotenv = require('dotenv');
 const { testConnection } = require('./config/db');
 const { helmetMiddleware, corsMiddleware, globalRateLimiter } = require('./middleware/security');
 const { errorHandler } = require('./middleware/errorHandler');
+const domainRouter = require('./middleware/domainRouter');
 
 const authRoutes = require('./routes/auth');
 const societyRoutes = require('./routes/societies');
@@ -16,6 +17,7 @@ const PORT = process.env.PORT || 5000;
 // Mount Zero-Breach Security & Parsing Middleware
 app.use(helmetMiddleware);
 app.use(corsMiddleware);
+app.use(domainRouter);
 app.use(globalRateLimiter);
 // Strict JSON Parsing with Content-Type Verification to block MIME type confusion & oversized payloads
 app.use(express.json({ 
