@@ -36,8 +36,8 @@
             }
 
             if (isCustomSociety()) {
-                // Instantly inject CSS to hide main marketing body elements before they even render
-                document.write('<style>#main-wrapper > * { display: none !important; } #footer-placeholder { display: none !important; }</style>');
+                // Instantly inject CSS to hide main marketing body elements but keep coming soon containers visible
+                document.write('<style>body { background: #0f172a !important; } #main-wrapper > *:not(.society-coming-soon-container):not(.society-not-found-container):not(.coming-soon-loader):not(.society-admin-banner) { display: none !important; } #footer-placeholder { display: none !important; }</style>');
                 
                 document.addEventListener('DOMContentLoaded', function() {
                     const hostname = window.location.hostname;
@@ -73,7 +73,7 @@
                     if (uStr) {
                         const u = JSON.parse(uStr);
                         if (u && ['representative','secretary','president','treasurer','super_admin'].includes(u.role)) {
-                            adminBanner = '<div style="background: linear-gradient(90deg, #1A4A8A, #008080); color: #fff; padding: 10px 20px; text-align: center; font-size: 14px; font-weight: 600; box-shadow: 0 4px 15px rgba(0,0,0,0.1); position: relative; z-index: 1000; border-radius: 0 0 12px 12px; margin-bottom: -20px;">' +
+                            adminBanner = '<div class="society-admin-banner" style="background: linear-gradient(90deg, #1A4A8A, #008080); color: #fff; padding: 10px 20px; text-align: center; font-size: 14px; font-weight: 600; box-shadow: 0 4px 15px rgba(0,0,0,0.1); position: relative; z-index: 1000; border-radius: 0 0 12px 12px; margin-bottom: -20px;">' +
                                 '🛡️ <span style="opacity: 0.9;">Viewing as Society Admin (' + u.role.toUpperCase() + ')</span> &nbsp;|&nbsp; <a href="javascript:void(0)" onclick="alert(\'Digital Dashboard Setup in progress. Portal management controls are active in top navigation.\')" style="color: #FFD700; text-decoration: underline; font-weight: 700; margin-left: 10px;">Access Management Console &rarr;</a>' +
                                 '</div>';
                         }
