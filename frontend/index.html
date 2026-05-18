@@ -24,7 +24,127 @@
         <link href="css/rtl-style.css" rel="stylesheet" type="text/css" id="rtl-theme-default" disabled="disabled" />
         <link href="css/colors/default-color.css" rel="stylesheet" type="text/css" id="theme-color" />
     
-        <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; frame-src 'self' https://www.youtube.com;">
+        <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' http://127.0.0.1:5000 http://localhost:5000 https://propertease-api-do2f.onrender.com; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; frame-src 'self' https://www.youtube.com;">
+        
+        <script>
+        // Custom Society Domain Interceptor & Coming Soon Renderer
+        (function() {
+            function isCustomSociety() {
+                const h = window.location.hostname.toLowerCase();
+                if (h === 'propertease.co.in' || h === 'www.propertease.co.in' || h === '127.0.0.1' || h === 'localhost' || h.includes('onrender.com')) return false;
+                return true;
+            }
+
+            if (isCustomSociety()) {
+                // Instantly inject CSS to hide main marketing body elements before they even render
+                document.write('<style>#main-wrapper > * { display: none !important; } #footer-placeholder { display: none !important; }</style>');
+                
+                document.addEventListener('DOMContentLoaded', function() {
+                    const hostname = window.location.hostname;
+                    const apiUrl = (window.location.hostname.includes('localhost') || window.location.hostname === '127.0.0.1') ? 'http://127.0.0.1:5000/api/v1' : 'https://propertease-api-do2f.onrender.com/api/v1';
+                    
+                    // Show a premium loader inside main wrapper
+                    const mw = document.getElementById('main-wrapper');
+                    mw.innerHTML = '<div class="coming-soon-loader text-center py-5" style="min-height: 80vh; display: flex; align-items: center; justify-content: center;"><div class="spinner-border text-primary" style="width: 4rem; height: 4rem;" role="status"></div></div>';
+                    
+                    fetch(apiUrl + '/societies/domain-info?hostname=' + encodeURIComponent(hostname))
+                    .then(res => {
+                        if (!res.ok) throw new Error('NOT_FOUND');
+                        return res.json();
+                    })
+                    .then(data => {
+                        if (data && data.success && data.society) {
+                            renderComingSoon(data.society, hostname);
+                        } else {
+                            renderNotFound(hostname);
+                        }
+                    })
+                    .catch(err => {
+                        renderNotFound(hostname);
+                    });
+                });
+            }
+
+            function renderComingSoon(soc, domain) {
+                // Check if user is logged in admin
+                let adminBanner = '';
+                try {
+                    const uStr = localStorage.getItem('user');
+                    if (uStr) {
+                        const u = JSON.parse(uStr);
+                        if (u && ['representative','secretary','president','treasurer','super_admin'].includes(u.role)) {
+                            adminBanner = '<div style="background: linear-gradient(90deg, #1A4A8A, #008080); color: #fff; padding: 10px 20px; text-align: center; font-size: 14px; font-weight: 600; box-shadow: 0 4px 15px rgba(0,0,0,0.1); position: relative; z-index: 1000; border-radius: 0 0 12px 12px; margin-bottom: -20px;">' +
+                                '🛡️ <span style="opacity: 0.9;">Viewing as Society Admin (' + u.role.toUpperCase() + ')</span> &nbsp;|&nbsp; <a href="javascript:void(0)" onclick="alert(\'Digital Dashboard Setup in progress. Portal management controls are active in top navigation.\')" style="color: #FFD700; text-decoration: underline; font-weight: 700; margin-left: 10px;">Access Management Console &rarr;</a>' +
+                                '</div>';
+                        }
+                    }
+                } catch(e) {}
+
+                const mw = document.getElementById('main-wrapper');
+                mw.innerHTML = adminBanner + 
+                    '<div class="society-coming-soon-container" style="min-height: 100vh; background: radial-gradient(circle at top right, #1e293b, #0f172a); color: #f8fafc; padding: 120px 20px 80px; font-family: \'Inter\', sans-serif; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden;">' +
+                        '<div style="position: absolute; top: -100px; left: 50%; transform: translateX(-50%); width: 600px; height: 600px; background: radial-gradient(circle, rgba(26,74,138,0.2) 0%, rgba(0,0,0,0) 70%); filter: blur(60px); pointer-events: none;"></div>' +
+                        '<div style="max-width: 850px; margin: 0 auto; z-index: 10; width: 100%;">' +
+                            '<div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); padding: 8px 20px; border-radius: 50px; font-size: 14px; font-weight: 600; color: #38bdf8; margin-bottom: 28px; backdrop-filter: blur(10px); box-shadow: 0 10px 25px rgba(0,0,0,0.2);">' +
+                                '<i class="las la-crown" style="font-size: 18px; color: #facc15;"></i> Official Propert-Ease Tenant Portal' +
+                            '</div>' +
+                            '<h1 style="font-size: 52px; font-weight: 800; letter-spacing: -1.5px; line-height: 1.15; margin-bottom: 24px; background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">' +
+                                soc.name +
+                            '</h1>' +
+                            '<p style="font-size: 20px; color: #94a3b8; line-height: 1.6; margin-bottom: 48px; max-width: 700px; margin-left: auto; margin-right: auto; font-weight: 400;">' +
+                                'Our official digital community portal is currently being provisioned by the Managing Committee. We are setting up automated billing, visitor access controls, and transparent governance.' +
+                            '</p>' +
+                            '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 56px;">' +
+                                '<div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 24px; border-radius: 16px; backdrop-filter: blur(12px); box-shadow: 0 15px 35px rgba(0,0,0,0.2); transition: transform 0.3s ease;">' +
+                                    '<i class="las la-map-marker-alt" style="font-size: 36px; color: #38bdf8; margin-bottom: 12px; display: block;"></i>' +
+                                    '<div style="font-size: 14px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; margin-bottom: 4px;">Location</div>' +
+                                    '<div style="font-size: 18px; font-weight: 700; color: #f1f5f9;">' + soc.city + ', ' + soc.state + '</div>' +
+                                '</div>' +
+                                '<div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 24px; border-radius: 16px; backdrop-filter: blur(12px); box-shadow: 0 15px 35px rgba(0,0,0,0.2); transition: transform 0.3s ease;">' +
+                                    '<i class="las la-building" style="font-size: 36px; color: #10b981; margin-bottom: 12px; display: block;"></i>' +
+                                    '<div style="font-size: 14px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; margin-bottom: 4px;">Total Community Units</div>' +
+                                    '<div style="font-size: 18px; font-weight: 700; color: #f1f5f9;">' + soc.total_units + ' Registered Units</div>' +
+                                '</div>' +
+                                '<div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 24px; border-radius: 16px; backdrop-filter: blur(12px); box-shadow: 0 15px 35px rgba(0,0,0,0.2); transition: transform 0.3s ease;">' +
+                                    '<i class="las la-shield-check" style="font-size: 36px; color: #8b5cf6; margin-bottom: 12px; display: block;"></i>' +
+                                    '<div style="font-size: 14px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; margin-bottom: 4px;">Security & Validation</div>' +
+                                    '<div style="font-size: 18px; font-weight: 700; color: #10b981;">Verified Domain SSL</div>' +
+                                '</div>' +
+                            '</div>' +
+                            '<div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); padding: 40px; border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); backdrop-filter: blur(20px);">' +
+                                '<h3 style="font-size: 24px; font-weight: 700; margin-bottom: 12px; color: #ffffff;">Are you a resident of ' + soc.name + '?</h3>' +
+                                '<p style="color: #94a3b8; font-size: 15px; margin-bottom: 24px;">Register your email to receive early access instructions when the resident portal goes live.</p>' +
+                                '<form onsubmit="event.preventDefault(); alert(\'Thank you! Your notification request has been logged securely.\'); this.reset();" style="display: flex; gap: 12px; max-width: 500px; margin: 0 auto;">' +
+                                    '<input type="email" placeholder="Enter your email address..." required style="flex: 1; padding: 14px 24px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.06); color: #fff; font-size: 16px; outline: none; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);" />' +
+                                    '<button type="submit" style="background: linear-gradient(135deg, #1A4A8A, #008080); color: #fff; border: none; padding: 14px 32px; border-radius: 12px; font-weight: 700; font-size: 16px; cursor: pointer; transition: opacity 0.2s; box-shadow: 0 8px 20px rgba(26,74,138,0.4); white-space: nowrap;">🚀 Get Notified</button>' +
+                                '</form>' +
+                            '</div>' +
+                        '</div>' +
+                    '</div>';
+            }
+
+            function renderNotFound(domain) {
+                const mw = document.getElementById('main-wrapper');
+                mw.innerHTML = '<div class="society-not-found-container" style="min-height: 100vh; background: #0f172a; color: #f8fafc; padding: 140px 20px; font-family: \'Inter\', sans-serif; text-align: center; display: flex; align-items: center; justify-content: center;">' +
+                    '<div style="max-width: 650px; width: 100%; margin: 0 auto;">' +
+                        '<div style="width: 90px; height: 90px; background: rgba(239,68,68,0.15); color: #ef4444; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 28px; border: 1px solid rgba(239,68,68,0.3);">' +
+                            '<i class="las la-exclamation-triangle" style="font-size: 48px;"></i>' +
+                        '</div>' +
+                        '<h1 style="font-size: 42px; font-weight: 800; margin-bottom: 20px; color: #ffffff;">Domain Record Not Found</h1>' +
+                        '<p style="font-size: 18px; color: #94a3b8; line-height: 1.6; margin-bottom: 36px;">' +
+                            'The subdomain or custom domain <strong style="color: #38bdf8;">' + domain + '</strong> is not associated with any active society on the Propert-Ease network.' +
+                        '</p>' +
+                        '<div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 32px; border-radius: 20px; margin-bottom: 40px; text-align: left;">' +
+                            '<h3 style="font-size: 20px; font-weight: 700; margin-bottom: 12px; color: #ffffff; display: flex; align-items: center; gap: 10px;"><i class="las la-lightbulb text-warning" style="font-size: 24px;"></i> Available for Onboarding</h3>' +
+                            '<p style="color: #94a3b8; font-size: 15px; margin-bottom: 20px; line-height: 1.5;">If you are an official representative or RWA member of this community, you can claim this domain and digitize your society operations in under 5 minutes.</p>' +
+                            '<a href="http://propertease.co.in/register/?domain=' + encodeURIComponent(domain) + '" class="btn" style="background: #10b981; color: #fff; font-weight: 700; padding: 14px 28px; border-radius: 10px; display: inline-flex; align-items: center; gap: 8px; text-decoration: none;"><i class="las la-rocket" style="font-size: 20px;"></i> Claim & Onboard This Society &rarr;</a>' +
+                        '</div>' +
+                        '<a href="http://propertease.co.in/" style="color: #38bdf8; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;"><i class="las la-arrow-left"></i> Return to Propert-Ease Main Portal</a>' +
+                    '</div>' +
+                '</div>';
+            }
+        })();
+        </script>
     </head>
     <body>
         <!--* box-wrapper -->

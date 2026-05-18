@@ -18,6 +18,56 @@ const requireCsrfHeader = (req, res, next) => {
 };
 
 /**
+ * @route GET /api/v1/societies/domain-info
+ * @desc Get public society info by custom domain/subdomain for Coming Soon portal
+ * @access Public
+ */
+router.get('/domain-info', asyncHandler(async (req, res) => {
+  const { hostname } = req.query;
+  if (!hostname) {
+    return res.status(400).json({ success: false, message: 'Hostname query parameter is required.' });
+  }
+
+  const cleanHostname = hostname.trim().toLowerCase();
+  
+  // For seamless localhost testing (e.g. jainsociety.localhost -> jainsociety.propertease.co.in)
+  let targetDomain = cleanHostname;
+  if (targetDomain.endsWith('.localhost')) {
+    targetDomain = targetDomain.replace(/\.localhost(:\d+)?$/, '.propertease.co.in');
+  }
+  
+  // Lookup domain in society_domains table
+  const [rows] = await pool.query(
+    `SELECT s.id, s.name, s.city, s.state, s.pincode, s.total_units, s.logo_path, s.plan, s.created_at, sd.is_verified, sd.ssl_status 
+     FROM society_domains sd 
+     JOIN societies s ON sd.society_id = s.id 
+     WHERE sd.domain = ?`,
+    [targetDomain]
+  );
+
+  if (rows.length === 0) {
+    return res.status(404).json({ success: false, message: 'Society domain record not found.' });
+  }
+
+  const society = rows[0];
+
+  res.status(200).json({
+    success: true,
+    society: {
+      id: society.id,
+      name: society.name,
+      city: society.city,
+      state: society.state,
+      pincode: society.pincode,
+      total_units: society.total_units,
+      logo_path: society.logo_path,
+      is_verified: society.is_verified === 1,
+      established_year: new Date(society.created_at).getFullYear()
+    }
+  });
+}));
+
+/**
  * @route GET /api/v1/societies/check-domain
  * @desc Check real-time subdomain or custom domain availability
  * @access Private
